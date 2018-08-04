@@ -22,9 +22,9 @@ Install yarn
 npm i -g yarn
 ```
 
-Go into client folder
+Go into frontend folder
 ```
-cd client
+cd frontend
 ```
 
 Install dependencies
