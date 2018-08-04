@@ -3,6 +3,21 @@
 
 ## Server
 
+Install truffle
+```
+npm install -g truffle
+```
+
+Go to smart contract folder
+```
+cd smartContracts
+```
+
+Compile
+```
+truffle compile
+```
+
 
 ## Frontend
 
