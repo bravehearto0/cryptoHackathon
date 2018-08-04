@@ -1,8 +1,10 @@
 # cryptoHackathon
 
 
+## Server
 
-### Client
+
+## Frontend
 
 Install nvm
 ```
@@ -11,6 +13,7 @@ curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.11/install.sh | 
 
 Install node ^6
 ```
+nvm install 6
 nvm use 6
 ```
 
