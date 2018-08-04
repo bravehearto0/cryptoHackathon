@@ -48,22 +48,22 @@ contract PokemonPlatform {
     }
 
     // get the pokemon belong to current owner
-    function getPokemon() external view returns (Pokemon[]){
+    function getMyPokemons() external view returns (Pokemon[]){
 
     }
 
     // get all available pokemon that has releaseTimestamp
-    function getAllPokemon() external view returns (Pokemon[]) {
+    function getAllPokemons() external view returns (Pokemon[]) {
 
     }
 
     // get the unclaimed pokemon mapping
-    function getUnclaimedPokemon() external view returns(Pokemon[]) {
+    function getUnclaimedPokemons() external view returns(Pokemon[]) {
       // front end parse the generation and total count
     }
 
     // used to populate the list of pokemon
-    function populatePokemon(string [] pokemons) public {
+    function populatePokemons(string [] pokemons) public {
 
     }
 
