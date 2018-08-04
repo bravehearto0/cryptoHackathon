@@ -11,8 +11,16 @@ contract PokemonPlatform is Ownable {
         uint32 generation;
         uint32 releaseTimestamp;
     }
-
+    // global index of Pokemon
+    uint PokemonId = 0;
+    // mapping from id to Pokemon struct
     mapping (uint => Pokemon) public mPokemon;
+    // array of Pokemon
+    Pokemon [] allPokemons;
+    // number of total claimed Pokemon
+    uint numClaimedPokemon;
+    // number of released Pokemon
+    uint numReleasedPokemon;
 
     // latitudeInt is the integer part of the latitude, latitudeFloat is the float part
     struct Access {
@@ -27,11 +35,11 @@ contract PokemonPlatform is Ownable {
       string name;
       address userAddress;
       string photoUrl;
+      uint   numPokemon;
     }
     // given address return the user profile info
     mapping(address => UserProfile) ownerToProfile;
 
-    Pokemon [] allPokemons;
     // the ownership of the pokemonId  => owner address
     mapping(uint => address) public ownerToPokemon;
 
@@ -42,20 +50,28 @@ contract PokemonPlatform is Ownable {
     // the last access user have. used to GPS check and rate limit
     mapping(address => Access) public lastAccess;
 
+    // modifier
+    
+
+
     // the generation number and total count
     //event NewPokemonGenerationReleased(uint generation, uint totalCount);
-
+    event GetMyPokemons(uint _numPokemon);
+    event AllReleasedPokemons(uint _numReleasedPokemon);
+    event UnclaimedPokemons(uint _numUnclaimed);
+    event PokemonReleased(uint _currentGeneration);
+    event PokemonPopulated(uint _id, string _name, string _url, string _bio, uint32 _generation, uint32 _releaseTimestamp);
     event UserProfileCreated(string _name, address indexed _address, string _photoUrl);
-    event UserProfileSent(string _name, address indexed _address, string _photoUrl);
+    event UserProfileRetrieved(string _name, address indexed _address, string _photoUrl, uint _num);
 
 
     uint rateLimitInterval;
-    uint currentGeneration;
+    uint currentGeneration = 0;
     // gps Int and float are used to prevent gps spoofing.
     uint gpsThresholdInt;
     uint gpsThresholdFloat;
-    constructor(uint startGeneration, uint timeInterval, uint gpsInt, uint gpsFloat) public {
-      currentGeneration = startGeneration;
+
+    constructor(uint timeInterval, uint gpsInt, uint gpsFloat) public {
       rateLimitInterval = timeInterval;
       gpsThresholdInt = gpsInt;
       gpsThresholdFloat = gpsFloat;
@@ -64,41 +80,41 @@ contract PokemonPlatform is Ownable {
     // TODO: apply ratelimit and GPS spoofing checks
     function findPokemon(uint latitudeInt, uint latitudeFloat, uint longitudeInt, uint longitudeFloat) external returns(bool) {
 
+
+
+      numClaimedPokemon += 1;
+      lastAccess[msg.sender] = block.timestamp;
+
     }
 
     // get the pokemon belong to current owner - retuns integer array of Pokemon Ids
     function getMyPokemons() external view returns (uint[]){
       // loop through to look for Pokemon belonging to this msg.sender
-      uint[] arrayId;
+      uint[] memory v = new uint[](ownerToProfile[msg.sender].numPokemon);
+      uint k = 0;
       for (uint i=0; i < allPokemons.length; i++) {
           if(ownerToPokemon[i] == msg.sender){
-              arrayId.push(i);
+              v[k] = i;
+              k += 1;
           }
       }
-      // copy to fixed-size array
-      uint[] memory v = new uint[](arrayId.length);
-      for (i=0; i < arrayId.length; i++) {
-          v[i] = arrayId[i];
-      }
+      emit GetMyPokemons(ownerToProfile[msg.sender].numPokemon);
       return v;
     }
 
-    // get all available pokemon that has releaseTimestamp
+    // get all available pokemon that has been released
     function getAllPokemons() external view returns (uint[]) {
       // find all released Pokemon
-      uint[] arrayId;
+      uint[] memory v = new uint[](numReleasedPokemon);
+      uint k = 0;
       for (uint i=0; i < allPokemons.length; i++) {
           // release time is earlier than current timestamp -> released Pokemon
           if(allPokemons[i].releaseTimestamp != 0 ){
-              arrayId.push(i);
+              v[k] = i;
+              k += 1;
           }
       }
-
-      // copy to fixed-size array
-      uint[] memory v = new uint[](arrayId.length);
-      for (i=0; i < arrayId.length; i++) {
-          v[i] = arrayId[i];
-      }
+      emit AllReleasedPokemons(numReleasedPokemon);
       return v;
     }
 
@@ -106,45 +122,56 @@ contract PokemonPlatform is Ownable {
     function getUnclaimedPokemons() external view returns(uint[]) {
       // front end parse the generation and total count
       // find all released Pokemon
-      uint[] arrayId;
+      uint numUnclaimed = allPokemons.length - numClaimedPokemon;
+      uint[] memory v = new uint[](numUnclaimed);
+      uint k = 0;
       for (uint i=0; i < allPokemons.length; i++) {
           // release time is earlier than current timestamp -> released Pokemon
           if(allPokemons[i].releaseTimestamp == 0){
-              arrayId.push(i);
+              v[k] = i;
+              k += 1;
           }
       }
-
-      // copy to fixed-size array
-      uint[] memory v = new uint[](arrayId.length);
-      for (i=0; i < arrayId.length; i++) {
-          v[i] = arrayId[i];
-      }
+      emit UnclaimedPokemons(numUnclaimed);
       return v;
     }
 
     // used to add new pokemons into allPokemons
-    function populatePokemons(uint[] pokemons) public onlyOwner() {
-
+    function populatePokemons(string name, string url, string bio, uint32 generation, uint32 releaseTimestamp) public onlyOwner() {
+      // increment Id
+      PokemonId += 1;
+      mPokemon[PokemonId] = Pokemon(name, url, bio, generation, releaseTimestamp);
+      allPokemons.push(mPokemon[PokemonId]);
+      emit PokemonPopulated(PokemonId, name, url, bio, generation, releaseTimestamp);
     }
 
     // owner release new pokemon generation
     function releasePokemon() public onlyOwner {
-
+        // release Pokemons with currentGeneration
+        for (uint i=0; i < allPokemons.length; i++) {
+            // release time is earlier than current timestamp -> released Pokemon
+            if(allPokemons[i].generation == currentGeneration){
+                allPokemons[i].releaseTimestamp = block.timestamp;
+                numReleasedPokemon += 1;
+            }
+        }
+        // increment generation counter
+        currentGeneration += 1;
+        emit PokemonReleased(currentGeneration - 1);
     }
 
     // create user profile
     function createProfile(string _name, string _photoUrl) external returns (bool){
-        ownerToProfile[msg.sender] = UserProfile(_name, msg.sender, _photoUrl);
+        ownerToProfile[msg.sender] = UserProfile(_name, msg.sender, _photoUrl, 0);
         emit UserProfileCreated(_name, msg.sender, _photoUrl);
         return true;
     }
 
     // return the user getProfile
-    function getProfile() external view returns (string, address, string) {
+    function getProfile() external view returns (string, address, string, uint) {
         UserProfile memory user = ownerToProfile[msg.sender];
-        emit UserProfileSent(user.name, user.userAddress, user.photoUrl);
-        return (user.name, user.userAddress, user.photoUrl);
-
+        emit UserProfileRetrieved(user.name, user.userAddress, user.photoUrl, user.numPokemon);
+        return (user.name, user.userAddress, user.photoUrl, user.numPokemon);
     }
 
 
