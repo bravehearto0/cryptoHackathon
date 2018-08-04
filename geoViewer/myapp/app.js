@@ -1,6 +1,13 @@
 const express = require('express');
 const app = express();
 
-app.get('/health', (req, res) => res.send('Healthy!'));
+var dirname = process.cwd()
 
-app.listen(3000, () => console.log('Example app listening on port 3000!'));
+app.get('/health', (req, res) => res.send('OK'));
+app.use(express.static('static'));
+app.use(express.static('data'));
+app.get('/pokey', function(req, res) {
+    res.sendFile(dirname + '/static/pokey.html');
+});
+
+app.listen(3000);
