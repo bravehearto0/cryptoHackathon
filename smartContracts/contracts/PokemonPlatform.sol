@@ -1,7 +1,7 @@
 pragma solidity ^0.4.22;
+import "./ownable.sol";
 
-
-contract PokemonPlatform {
+contract PokemonPlatform is Ownable{
     // Parameters of the Pokemon
     struct Pokemon { // Struct
         string name;
@@ -11,7 +11,6 @@ contract PokemonPlatform {
         uint32 releaseTimestamp;
     }
 
-    uint currentGeneration;
     // latitudeInt is the integer part of the latitude, latitudeFloat is the float part
     struct Access {
       uint timestamp;
@@ -42,6 +41,18 @@ contract PokemonPlatform {
     // the generation number and total count
     event NewPokemonGenerationReleased(uint generation, uint totalCount);
 
+    uint rateLimitInterval;
+    uint currentGeneration;
+    // gps Int and float are used to prevent gps spoofing.
+    uint gpsThresholdInt;
+    uint gpsThresholdFloat;
+    constructor(uint startGeneration, uint timeInterval, uint gpsInt, uint gpsFloat) public {
+      currentGeneration = startGeneration;
+      rateLimitInterval = timeInterval;
+      gpsThresholdInt = gpsInt;
+      gpsThresholdFloat = gpsFloat;
+    }
+
     // TODO: apply ratelimit and GPS spoofing checks
     function findPokemon(uint latitudeInt, uint latitudeFloat, uint longitudeInt, uint longitudeFloat) external returns(bool) {
 
@@ -63,12 +74,16 @@ contract PokemonPlatform {
     }
 
     // used to populate the list of pokemon
+<<<<<<< HEAD
     function populatePokemons(string [] pokemons) public {
+=======
+    function populatePokemon(string [] pokemons) public onlyOwner {
+>>>>>>> add ownership,
 
     }
 
     // owner release new pokemon generation
-    function releasePokemon() public {
+    function releasePokemon() public onlyOwner {
 
     }
 
