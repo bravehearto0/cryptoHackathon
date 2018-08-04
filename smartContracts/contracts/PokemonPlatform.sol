@@ -1,8 +1,9 @@
 pragma solidity ^0.4.22;
 
 import './zeppelin/Ownable.sol';
+import './gps.sol';
 
-contract PokemonPlatform is Ownable {
+contract PokemonPlatform is Ownable, gps{
     // Parameters of the Pokemon
     struct Pokemon { // Struct
         string name;
@@ -77,8 +78,22 @@ contract PokemonPlatform is Ownable {
       gpsThresholdFloat = gpsFloat;
     }
 
+    modifier rateLimitCheck() {
+      Access lastAccess = lastAccess[msg.sender];
+      if (lastAccess.isValue) {
+        require(
+          lastAccess.timestamp + rateLimitInterval < now,
+          "user rate limited. rateLimitInterval is " + string(rateLimitInterval)
+          );
+      }
+      _;
+    }
+
     // TODO: apply ratelimit and GPS spoofing checks
-    function findPokemon(uint latitudeInt, uint latitudeFloat, uint longitudeInt, uint longitudeFloat) external returns(bool) {
+    function findPokemon(uint latitudeInt, uint latitudeFloat, uint longitudeInt, uint longitudeInt) external returns(bool)
+      rateLimitCheck,
+      gpsCheck(latitudeInt, latitudeFloat, longitudeInt, longitudeInt)
+      {
 
 
 
