@@ -14,7 +14,6 @@ contract PokemonPlatform is Ownable {
 
     mapping (uint => Pokemon) public mPokemon;
 
-    uint currentGeneration;
     // latitudeInt is the integer part of the latitude, latitudeFloat is the float part
     struct Access {
       uint timestamp;
@@ -29,13 +28,14 @@ contract PokemonPlatform is Ownable {
       address userAddress;
       string photoUrl;
     }
+    // given address return the user profile info
+    mapping(address => UserProfile) ownerToProfile;
 
     Pokemon [] allPokemons;
     // the ownership of the pokemonId  => owner address
     mapping(uint => address) public ownerToPokemon;
 
-    // given address return the user profile info
-    mapping(address => UserProfile) ownerToProfile;
+
     // store the location of pokemon, byte32 is the hash versioned of the geohash
     mapping(bytes32 => uint) public lottery;
 
@@ -44,6 +44,10 @@ contract PokemonPlatform is Ownable {
 
     // the generation number and total count
     //event NewPokemonGenerationReleased(uint generation, uint totalCount);
+
+    event UserProfileCreated(string _name, address indexed _address, string _photoUrl);
+    event UserProfileSent(string _name, address indexed _address, string _photoUrl);
+
 
     uint rateLimitInterval;
     uint currentGeneration;
@@ -58,9 +62,9 @@ contract PokemonPlatform is Ownable {
     }
 
     // TODO: apply ratelimit and GPS spoofing checks
-    //function findPokemon(uint latitudeInt, uint latitudeFloat, uint longitudeInt, uint longitudeFloat) external returns(bool) {
+    function findPokemon(uint latitudeInt, uint latitudeFloat, uint longitudeInt, uint longitudeFloat) external returns(bool) {
 
-    //}
+    }
 
     // get the pokemon belong to current owner - retuns integer array of Pokemon Ids
     function getMyPokemons() external view returns (uint[]){
@@ -130,12 +134,16 @@ contract PokemonPlatform is Ownable {
 
     // create user profile
     function createProfile(string _name, string _photoUrl) external returns (bool){
-
+        ownerToProfile[msg.sender] = UserProfile(_name, msg.sender, _photoUrl);
+        emit UserProfileCreated(_name, msg.sender, _photoUrl);
+        return true;
     }
 
     // return the user getProfile
-    function getProfile() external view returns (userProfile) {
-
+    function getProfile() external view returns (string, address, string) {
+        UserProfile memory user = ownerToProfile[msg.sender];
+        emit UserProfileSent(user.name, user.userAddress, user.photoUrl);
+        return (user.name, user.userAddress, user.photoUrl);
 
     }
 
