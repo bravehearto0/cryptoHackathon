@@ -74,11 +74,7 @@ contract PokemonPlatform is Ownable{
     }
 
     // used to populate the list of pokemon
-<<<<<<< HEAD
-    function populatePokemons(string [] pokemons) public {
-=======
-    function populatePokemon(string [] pokemons) public onlyOwner {
->>>>>>> add ownership,
+    function populatePokemons(string [] pokemons) public onlyOwner {
 
     }
 
