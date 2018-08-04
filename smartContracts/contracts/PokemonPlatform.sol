@@ -21,10 +21,18 @@ contract PokemonPlatform {
       uint longitudeFloat;
     }
 
+    struct UserProfile {
+      string name;
+      address userAddress;
+      string photoUrl;
+    }
+
     Pokemon [] allPokemons;
     // the ownership of the pokemonId  => owner address
     mapping(uint => address) ownerToPokemon;
 
+    // given address return the user profile info
+    mapping(address => UserProfile) ownerToProfile;
     // store the location of pokemon, byte32 is the hash versioned of the geohash
     mapping(byte32 => uint) lottery;
 
@@ -61,6 +69,16 @@ contract PokemonPlatform {
 
     // owner release new pokemon generation
     function releasePokemon() public {
+
+    }
+
+    // create user profile
+    function createProfile(string _name, string _photoUrl) external returns (bool){
+
+    }
+
+    // return the user getProfile
+    function getProfile() external view returns (userProfile) {
 
     }
 
