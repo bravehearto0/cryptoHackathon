@@ -3,6 +3,8 @@ pragma solidity ^0.4.22;
 contract gps {
 
   function differences(uint intOne, uint intTwo, uint floatOne, uint floatTwo) internal pure returns(uint, uint) {
+    floatOne = floatOne % (10 ** 6);
+    floatTwo = floatTwo % (10 ** 6);
     int intDiff = int(intOne) - int(intTwo);
     int floatDiff = int(floatOne) - int(floatTwo);
     if ((intDiff > 0 && floatDiff < 0) || (intDiff > 0 && floatDiff < 0)) {
@@ -36,7 +38,11 @@ contract gps {
       return ((laIntDiff + loIntDiff), (laFloatDiff + loFloatDiff));
   }
 
+  // not really a geoHash, a geoHash like hash generation
   function generateGeoHash(uint latitudeInt, uint latitudeFloat, uint longitudeInt, uint longitudeFloat, uint currentGeneration) internal pure returns (bytes32) {
+    // some sanity check, only last 6 digits are meaningful for latitude and longitude float
+    latitudeFloat = latitudeFloat % (10 ** 6);
+    longitudeFloat = longitudeFloat % (10 ** 6);
     if (currentGeneration == 0) {
       latitudeFloat = 0;
       longitudeFloat = 0;
@@ -47,35 +53,7 @@ contract gps {
       latitudeFloat = latitudeFloat - latitudeFloat % (10 ** 4);
       longitudeFloat = longitudeFloat - longitudeFloat % (10 ** 4);
     }
-    uint[4] memory data;
-    data[0] = latitudeInt;
-    data[1] = longitudeInt;
-    data[2] = latitudeFloat;
-    data[3] = longitudeFloat;
-    string memory concateLocation = bytes32ArrayToString(data);
-    return keccak256(abi.encodePacked(concateLocation));
-  }
 
-  function bytes32ArrayToString (uint[4] memory dataInt) internal pure returns (string) {
-    bytes32[4] memory data;
-    for (uint i = 0; i< 4; i++ ) {
-      data[i] = bytes32(dataInt[i]);
-    }
-    bytes memory bytesString = new bytes(data.length * 32);
-    uint urlLength;
-    for (i=0; i<data.length; i++) {
-        for (uint j=0; j<32; j++) {
-            byte char = byte(bytes32(uint(data[i]) * 2 ** (8 * j)));
-            if (char != 0) {
-                bytesString[urlLength] = char;
-                urlLength += 1;
-            }
-        }
-    }
-    bytes memory bytesStringTrimmed = new bytes(urlLength);
-    for (i=0; i<urlLength; i++) {
-        bytesStringTrimmed[i] = bytesString[i];
-    }
-    return string(bytesStringTrimmed);
-}
+    return keccak256(abi.encodePacked(latitudeInt, longitudeInt, latitudeFloat, longitudeFloat));
+  }
 }

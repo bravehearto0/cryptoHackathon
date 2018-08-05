@@ -117,7 +117,7 @@ def parse_profile_info():
     kitty_number = getrandbits(16)
     print(kitty_number)
     if kitty_number in used_numbers:
-        parse_profile_info()
+        return parse_profile_info()
     used_numbers.add(kitty_number)
 
     url = "https://api.cryptokitties.co/kitties/{}".format(kitty_number)
@@ -133,7 +133,9 @@ def parse_profile_info():
 
     name = str(data["id"]) if data["name"] is None else data["name"]
     bio = str(data["id"]) if data["bio"] is None else data["bio"]
-    image_url = str(data["id"]) if data["image_url"] is None else data["image_url"]
+    if data["image_url"] is None:
+        return parse_profile_info()
+    image_url = data["image_url"]
 
     return [name, bio, image_url]
 
