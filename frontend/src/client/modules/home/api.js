@@ -8,11 +8,11 @@ let contract;
 const CONTRACT_ADDRESS = '0xed52fd3f7de742cc7f6283106d66bb5366885d68';
 
 export const init = () => {
-  // if (__CLIENT__ && !web3js) {
+  if (__CLIENT__ && !web3js) {
     web3js = new Web3(new Web3.providers.HttpProvider('https://rinkeby.infura.io/v3/7509a94fe1d14f22bb3a34e3fb5c82e0'));
     contract = new web3js.eth.Contract(abiFile.abi, CONTRACT_ADDRESS);
     window.contract = contract;
-  // }
+  }
 };
 
 init();

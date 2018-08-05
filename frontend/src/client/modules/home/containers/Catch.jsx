@@ -22,7 +22,7 @@ class Catch extends React.Component {
   };
 
   componentDidMount() {
-    this.props.getProfile();
+    // this.props.getProfile();
   }
 
   render() {
