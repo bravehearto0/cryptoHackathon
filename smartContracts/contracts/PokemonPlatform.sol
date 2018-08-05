@@ -141,6 +141,18 @@ contract PokemonPlatform is Ownable, gps{
       Pokemon memory p = allPokemons[_index - 1];
       return (p.name, p.url, p.bio, p.generation, p.releaseTimestamp);
     }
+    // return name, url, bio, generation, releaseTimestamp, ownerName
+    function getPokemonOwnerView(uint _index) external view
+        onlyOwner()
+        returns (string, string, string, uint, uint, string) {
+      Pokemon memory p = allPokemons[_index - 1];
+      address ownerAddress = pokemonToOwner[_index];
+      string memory name = "";
+      if (ownerAddress != address(0)) {
+        name = ownerToProfile[ownerAddress].name;
+      }
+      return (p.name, p.url, p.bio, p.generation, p.releaseTimestamp, name);
+    }
 
     // get the pokemon belong to current owner - retuns integer array of Pokemon Ids
     function getMyPokemons() external view returns (uint[]){
@@ -245,7 +257,7 @@ contract PokemonPlatform is Ownable, gps{
     }
 
     // get all pokemon locations , this is for system testing and demo only
-    function getPokemonLocation(uint pokemonId) external view onlyOwner returns(int, uint, int, uint) {
+    function getPokemonLocation(uint pokemonId) public view onlyOwner returns(int, uint, int, uint) {
         Access memory access = pokemonToLocation[pokemonId];
         return (access.latitudeInt, access.latitudeFloat, access.longitudeInt, access.longitudeFloat);
     }
