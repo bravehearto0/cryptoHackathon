@@ -31,3 +31,24 @@
   width: 30%;
   margin-bottom: 20px;
 }
+
+.nav-item {
+  border-right: 1px solid #71bfe4;
+}
+
+.nav-link {
+  color: #cfefff;
+  padding: 25px;
+  border-right: 1px solid #60a4c5;
+  &.active {
+    color: white;
+    background: #66b3d8;
+  }
+}
+
+.navbar {
+  padding: 0;
+  > .container {
+    padding: 0;
+  }
+}

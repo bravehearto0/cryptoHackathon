@@ -1,32 +1,38 @@
 import React from 'react';
+import { Container, Navbar, Nav } from 'reactstrap';
+import styled from 'styled-components';
 import { NavLink } from 'react-router-dom';
-import { Container, Navbar, Nav, NavItem } from 'reactstrap';
 
-import modules from '../../../../../../modules';
-import settings from '../../../../../../../../../settings';
+import { MenuItem } from '../../../../../../modules/common/components/web';
+
+const SNavbar = styled.div`
+  box-shadow: 0 14px 10px -6px rgba(0,0,0,0.5), 0 22px 32px 22px rgba(0,0,0,0.5);
+  position: fixed;
+  bottom: 0;
+  background: #4da8d5;
+  width: 100%;
+  color: white;
+`;
 
 const NavBar = () => (
-  <Navbar color="faded" light>
-    <Container>
-      <Nav>
-        <NavLink to="/" className="navbar-brand">
-          {settings.app.name}
-        </NavLink>
-        {modules.navItems}
-      </Nav>
-
-      <Nav className="justify-content-end">
-        {modules.navItemsRight}
-        {__DEV__ && (
-          <NavItem>
-            <a href="/gplayground" className="nav-link">
-              GPlayground
-            </a>
-          </NavItem>
-        )}
-      </Nav>
-    </Container>
-  </Navbar>
+  <SNavbar>
+    <Navbar color="faded" light>
+      <Container>
+        <Nav>
+          <MenuItem key="/">
+            <NavLink to="/" exact className="nav-link" activeClassName="active">
+              Profile
+            </NavLink>
+          </MenuItem>
+          <MenuItem key="/catch">
+            <NavLink to="/catch" className="nav-link" activeClassName="active">
+              Catch
+            </NavLink>
+          </MenuItem>
+        </Nav>
+      </Container>
+    </Navbar>
+  </SNavbar>
 );
 
 export default NavBar;

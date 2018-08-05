@@ -18,9 +18,9 @@ class PageLayout extends React.Component {
   render() {
     const { children, navBar } = this.props;
     return (
-      <section className="d-flex flex-column flex-grow-1">
-        <section className="d-flex flex-column flex-grow-1 flex-shrink-0">
-          <section className="d-flex flex-column">{navBar !== false && <NavBar />}</section>
+      <section className="">
+        <section className="">
+          <section className="">{navBar !== false && <NavBar />}</section>
           <Container id="content">{children}</Container>
         </section>
         <Footer className="d-flex flex-shrink-0 justify-content-center">
