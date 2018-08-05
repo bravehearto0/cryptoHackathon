@@ -5,7 +5,6 @@
     <meta name="viewport" content="initial-scale=1.0">
     <meta charset="utf-8">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/ethereum/web3.js/dist/web3.min.js"></script>
     <style>
       #map {
         height: 100%;
@@ -20,74 +19,44 @@
   <body>
     <div id="map"></div>
     <script>
-      // eslint-global web3
-
-      // import abiFile from './PokemonPlatform.json';
-
-      let web3;
-      let contractInstance;
-      const CONTRACT_ADDRESS = '0xed52fd3f7de742cc7f6283106d66bb5366885d68';
-
-      function initWeb3(abiFile) {
-        if (typeof web3 !== 'undefined') {
-          web3 = new Web3(web3.currentProvider);
-        } else {
-          web3 = new Web3(new Web3.providers.HttpProvider("https://mainnet.infura.io/v3/7509a94fe1d14f22bb3a34e3fb5c82e0"));
-        }
-
-        contractInstance = web3.eth.contract(abiFile.abi).at(CONTRACT_ADDRESS);
-
-        var releaseEvent = contractInstance.PokemonReleased({});
-        releaseEvent.watch(function(err, res){
-          if (!err) {
-            console.log(res);
-          }
+      var map;
+      function initMap() {
+        map = new google.maps.Map(document.getElementById('map'), {
+          center: {lat: 37.780368, lng: -122.4148977},
+          zoom: 12
         });
-
-        var map;
-        function initMap() {
-          map = new google.maps.Map(document.getElementById('map'), {
-            center: {lat: 37.780368, lng: -122.4148977},
-            zoom: 12
-          });
-          $.getJSON('locations.json', function(result){
-            $.each(result, function(i, fields){
-              var infoWindow = new google.maps.InfoWindow({
-                content: 
-                  '<div>name:         ' + fields['name'] + '</div>' +
-                  '<div>bio:          ' + fields['bio'] + '</div>' + 
-                  '<div>generation:   ' + fields['generation']  + '</div>' +
-                  '<div>release time (local): ' + new Date(fields['releaseTimestamp']).toLocaleTimeString() + '</div>'
-              });
-              var marker = new google.maps.Marker({
-                position: {
-                  lat: fields['lat'],
-                  lng: fields['lng']
-                },
-                icon: {
-                  url: fields['url'],
-                  scaledSize: new google.maps.Size(64, 64)
-                },
-                map: map,
-                title: 'Pokemon ' + i
-              });
-              marker.addListener('mouseover', function() {
-                infoWindow.open(map, this);
-              });
-              marker.addListener('mouseout', function() {
-                infoWindow.close();
-              });
+        $.getJSON("output.json", function(result){
+          $.each(result, function(i, fields){
+            var infoWindow = new google.maps.InfoWindow({
+              content: 
+                '<div>name:         ' + fields['name'] + '</div>' +
+                '<div>bio:          ' + fields['bio'] + '</div>' + 
+                '<div>generation:   ' + fields['generation']  + '</div>' +
+                '<div>release time (local): ' + new Date(fields['releaseTimestamp']).toLocaleTimeString() + '</div>'
+            });
+            var marker = new google.maps.Marker({
+              position: {
+                lat: fields['lat'],
+                lng: fields['lng']
+              },
+              icon: {
+                url: fields['image_url'],
+                scaledSize: new google.maps.Size(64, 64)
+              },
+              map: map,
+              title: 'Pokemon ' + i
+            });
+            marker.addListener('mouseover', function() {
+              infoWindow.open(map, this);
+            });
+            marker.addListener('mouseout', function() {
+              infoWindow.close();
             });
           });
-        }
+        });
       }
-
-      function initAbi() {
-        $.getJSON('PokemonPlatform.json', initWeb3);
-      }
-
     </script>
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAkmAOJCVTuQsoIpnameUBBSjoU9BJ79Pg&callback=initAbi"
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAkmAOJCVTuQsoIpnameUBBSjoU9BJ79Pg&callback=initMap"
     async defer></script>
   </body>
 </html>
