@@ -143,7 +143,7 @@ contract PokemonPlatform is Ownable, gps{
     }
     // return name, url, bio, generation, releaseTimestamp, ownerName
     function getPokemonOwnerView(uint _index) external view
-        onlyOwner()
+        hasProfile()
         returns (string, string, string, uint, uint, string) {
       Pokemon memory p = allPokemons[_index - 1];
       address ownerAddress = pokemonToOwner[_index];
