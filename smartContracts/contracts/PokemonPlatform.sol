@@ -237,6 +237,9 @@ contract PokemonPlatform is Ownable, gps{
         return true;
     }
 
+
+
+
     // return the user getProfile
     function getProfile() external view hasProfile() returns (string, address, string, uint) {
         UserProfile memory user = ownerToProfile[msg.sender];
@@ -247,6 +250,11 @@ contract PokemonPlatform is Ownable, gps{
     function getPokemonLocation(uint pokemonId) external view onlyOwner returns(int, uint, int, uint) {
         Access memory access = pokemonToLocation[pokemonId];
         return (access.latitudeInt, access.latitudeFloat, access.longitudeInt, access.longitudeFloat);
+    }
+
+    // transfer ownership
+    function changeOwner(address newOwner, uint _index) public {
+        pokemonToOwner[_index] = newOwner;
     }
 
 }

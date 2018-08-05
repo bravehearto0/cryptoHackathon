@@ -1,13 +1,17 @@
 pragma solidity ^0.4.24;
 
 import "./Token.sol";
+import "../PokemonPlatform.sol";
 
 contract Auction {
 
     Token  public  mToken;
 
+    PokemonPlatform public pokemon;
+
     struct Bid {
         address issuer;
+        uint pokemonId;
         bytes32 blindedBid;
         uint deposit;
         address highestBidder;
@@ -35,16 +39,18 @@ contract Auction {
     event AuctionEnded(address indexed _caller, bytes32 _blindedBid, address indexed _winner, uint _highestBid);
 
     // constructor function
-    constructor(address _tokenAddress) public {
+    constructor(address _tokenAddress, address _pokemonAddress) public {
         // address must be valid
         require(_tokenAddress != address(0));
         // instantiate deployed Ocean token contract
         mToken = Token(_tokenAddress);
+        // pokemon instance
+        pokemon = PokemonPlatform(_pokemonAddress);
     }
 
     // any one can create a blind bid - input hash value as id of bid, time for bidding in second
-    function createBid(bytes32 _blindedBid, uint _biddingTime) public onlyBefore(_blindedBid) {
-        bids[_blindedBid] = Bid(msg.sender, _blindedBid, 0, 0x0, 0, now + _biddingTime, false);
+    function createBid(bytes32 _blindedBid, uint _pokemonId, uint _biddingTime) public onlyBefore(_blindedBid) {
+        bids[_blindedBid] = Bid(msg.sender, _pokemonId, _blindedBid, 0, 0x0, 0, now + _biddingTime, false);
         emit BidCreated(msg.sender, _blindedBid);
     }
 
@@ -69,6 +75,9 @@ contract Auction {
     function auctionEnd(bytes32 _blindedBid) public onlyAfter(_blindedBid) {
         require(!bids[_blindedBid].ended);
         bids[_blindedBid].ended = true;
+        // transfer ownership
+        pokemon.changeOwner(bids[_blindedBid].highestBidder, bids[_blindedBid].pokemonId);
+        // transfer funds
         require(mToken.transfer(bids[_blindedBid].issuer, bids[_blindedBid].highestBid));
         emit AuctionEnded(msg.sender, _blindedBid, bids[_blindedBid].highestBidder, bids[_blindedBid].highestBid);
     }
