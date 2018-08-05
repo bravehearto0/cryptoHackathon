@@ -1,0 +1,12 @@
+FROM node:6.9
+
+ENV NODE_ENV development
+
+RUN mkdir /code
+COPY . /code
+WORKDIR /code
+RUN yarn
+
+EXPOSE 8080
+
+CMD yarn seed && yarn watch

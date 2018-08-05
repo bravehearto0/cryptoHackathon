@@ -1,16 +1,16 @@
-FROM node:8.9-alpine
+FROM node:6.14.3
+# FROM node:6.11-alpine
 
-MAINTAINER Victor Vlasenko <victor.vlasenko@sysgears.com>
+# ENV NODE_ENV production
 
-RUN apk add --no-cache tini git
+# Setup application code
+RUN npm i -g npm
+RUN mkdir /code
+COPY . /code
+WORKDIR /code
+RUN npm i && NODE_ENV=production npm run build
+RUN rm -rf node_modules && npm i --prod
 
-ARG APP_DIR
+EXPOSE 8080
 
-RUN mkdir -p ${APP_DIR}/build && \
-    mkdir -p ${APP_DIR}/node_modules && \
-    mkdir -p /home/node/.cache/yarn && \
-    chown node:node -R ${APP_DIR} /home/node
-
-USER node
-
-ENTRYPOINT ["/sbin/tini", "--"]
+CMD yarn seed && yarn start

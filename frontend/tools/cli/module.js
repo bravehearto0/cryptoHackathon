@@ -16,11 +16,11 @@ function copyFiles(logger, templatePath, module, location) {
   logger.info(`Copying ${location} files…`);
 
   // create new module directory
-  const mkdir = shell.mkdir(`${__dirname}/../../packages/${location}/src/modules/${module}`);
+  const mkdir = shell.mkdir(`${__dirname}/../../src/${location}/modules/${module}`);
 
   // continue only if directory does not jet exist
-  if (mkdir.code === 0) {
-    const destinationPath = `${__dirname}/../../packages/${location}/src/modules/${module}`;
+  if(mkdir.code === 0) {
+    const destinationPath = `${__dirname}/../../src/${location}/modules/${module}`;
     shell.cp('-R', `${templatePath}/${location}/*`, destinationPath);
 
     logger.info(`✔ The ${location} files have been copied!`);
@@ -31,7 +31,7 @@ function copyFiles(logger, templatePath, module, location) {
     // rename files
     shell.ls('-Rl', '.').forEach(entry => {
       if (entry.isFile()) {
-        const moduleFile = entry.name.replace('Module', module.capitalize());
+        const moduleFile = entry.name.replace('module', module);
         shell.mv(entry.name, moduleFile);
       }
     });
@@ -39,81 +39,67 @@ function copyFiles(logger, templatePath, module, location) {
     // replace module names
     shell.ls('-Rl', '.').forEach(entry => {
       if (entry.isFile()) {
-        shell.sed('-i', /\$module\$/g, module, entry.name);
-        shell.sed('-i', /\$Module\$/g, module.toCamelCase().capitalize(), entry.name);
+        shell.sed('-i', /\[module\]/g, module, entry.name);
+        shell.sed('-i', /\[Module\]/g, module.toCamelCase().capitalize(), entry.name);
       }
     });
 
-    // get index file path
-    const modulesPath = `${__dirname}/../../packages/${location}/src/modules/`;
-    const indexFullFileName = fs.readdirSync(modulesPath).find(name => name.search(/index/) >= 0);
-    const indexPath = modulesPath + indexFullFileName;
-    let indexContent;
-
-    try {
-      // prepend import module
-      indexContent = `import ${module} from './${module}';\n` + fs.readFileSync(indexPath);
-    } catch (e) {
-      logger.error(`Failed to read ${indexPath} file`);
-      process.exit();
-    }
+    shell.cd('..');
+    // get module input data
+    const path = `${__dirname}/../../src/${location}/modules/index.js`;
+    let data = fs.readFileSync(path);
 
     // extract Feature modules
-    const featureRegExp = /Feature\(([^()]+)\)/g;
-    const [, featureModules] = featureRegExp.exec(indexContent) || ['', ''];
+    const re = /Feature\(([^()]+)\)/g;
+    const match = re.exec(data);
 
-    // add module to Feature connector
-    shell
-      .ShellString(indexContent.replace(RegExp(featureRegExp, 'g'), `Feature(${module}, ${featureModules})`))
-      .to(indexPath);
+    // prepend import module
+    const prepend = `import ${module} from './${module}';\n`;
+    fs.writeFileSync(path, prepend + data);
 
-    logger.info(`✔ Module for ${location} successfully created!`);
+    // add module to Feature function
+    shell.sed('-i', re, `Feature(${module}, ${match[1]})`, 'index.js');
+
+    logger.info(`✔Module for ${location} successfully created!`);
   }
 }
 
 function deleteFiles(logger, templatePath, module, location) {
   logger.info(`Deleting ${location} files…`);
 
-  const modulePath = `${__dirname}/../../packages/${location}/src/modules/${module}`;
+  const modulePath = `${__dirname}/../../src/${location}/modules/${module}`;
 
   if (fs.existsSync(modulePath)) {
-    // delete module directory
+    // create new module directory
     shell.rm('-rf', modulePath);
 
-    // path to modules index file
-    const modulesPath = `${__dirname}/../../packages/${location}/src/modules/`;
+    // change to destination directory
+    shell.cd(`${__dirname}/../../src/${location}/modules/`);
 
-    // get index file path
-    const indexFullFileName = fs.readdirSync(modulesPath).find(name => name.search(/index/) >= 0);
-    const indexPath = modulesPath + indexFullFileName;
-    let indexContent;
+    // add module to Feature function
+    //let ok = shell.sed('-i', `import ${module} from '.\/${module}';`, '', 'index.js');
 
-    try {
-      indexContent = fs.readFileSync(indexPath);
-    } catch (e) {
-      logger.error(`Failed to read ${indexPath} file`);
-      process.exit();
-    }
+    // get module input data
+    const path = `${__dirname}/../../src/${location}/modules/index.js`;
+    let data = fs.readFileSync(path);
 
     // extract Feature modules
-    const featureRegExp = /Feature\(([^()]+)\)/g;
-    const [, featureModules] = featureRegExp.exec(indexContent) || ['', ''];
-    const featureModulesWithoutDeleted = featureModules
-      .split(',')
-      .filter(featureModule => featureModule.trim() !== module);
+    const re = /Feature\(([^()]+)\)/g;
+    const match = re.exec(data);
+    const modules = match[1].split(',').filter(featureModule => featureModule.trim() !== module);
 
-    const contentWithoutDeletedModule = indexContent
-      .toString()
-      // replace features modules on features without deleted module
-      .replace(featureRegExp, `Feature(${featureModulesWithoutDeleted.toString().trim()})`)
-      // remove import module
-      .replace(RegExp(`import ${module} from './${module}';\n`, 'g'), '');
+    // remove import module line
+    const lines = data.toString().split('\n').filter(line => line.match(`import ${module} from './${module}';`) === null);
+    fs.writeFileSync(path, lines.join('\n'));
 
-    fs.writeFileSync(indexPath, contentWithoutDeletedModule);
+    // remove module from Feature function
+    shell.sed('-i', re, `Feature(${modules.toString().trim()})`, 'index.js');
 
-    logger.info(`✔ Module for ${location} successfully deleted!`);
-  } else {
-    logger.info(`✔ Module ${location} location for ${modulePath} wasn't found!`);
+    // continue only if directory does not jet exist
+    logger.info(`✔Module for ${location} successfully deleted!`);
+  }
+  else {
+    logger.info(`✔Module ${location} location for ${modulePath} wasn't found!`);
   }
 }
 
@@ -129,7 +115,8 @@ module.exports = (action, args, options, logger) => {
   if (args.location === 'client' || args.location === 'both') {
     if (action === 'addmodule') {
       copyFiles(logger, templatePath, args.module, 'client');
-    } else if (action === 'deletemodule') {
+    }
+    else if (action === 'deletemodule') {
       deleteFiles(logger, templatePath, args.module, 'client');
     }
   }
@@ -138,7 +125,8 @@ module.exports = (action, args, options, logger) => {
   if (args.location === 'server' || args.location === 'both') {
     if (action === 'addmodule') {
       copyFiles(logger, templatePath, args.module, 'server');
-    } else if (action === 'deletemodule') {
+    }
+    else if (action === 'deletemodule') {
       deleteFiles(logger, templatePath, args.module, 'server');
     }
   }

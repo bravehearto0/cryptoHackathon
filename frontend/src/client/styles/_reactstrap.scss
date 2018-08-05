@@ -1,0 +1,7 @@
+.dropdown-menu {
+  border-radius: 2px;
+  z-index: 1000;
+  > button {
+    cursor: pointer;
+  }
+}
