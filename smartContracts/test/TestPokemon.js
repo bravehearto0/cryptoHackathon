@@ -3,6 +3,15 @@
 
 const Pokemon = artifacts.require('PokemonPlatform.sol')
 
+const bigTen = number => new BN(number.toString(10), 10)
+
+function wait(ms) {
+    const start = new Date().getTime()
+    let end = start
+    while (end < start + ms) {
+        end = new Date().getTime()
+    }
+}
 
 contract('PokemonPlatform', (accounts) => {
     describe('Test User stories', () => {
@@ -37,20 +46,24 @@ contract('PokemonPlatform', (accounts) => {
             const location = await pokemon.getPokemonLocation(releasedPokemon[0].toNumber(), { from: accounts[0] })
             console.log("owner check pokemon location: ", location)
 
+            const claimPokemon = pokemon.ClaimPokemon()
+            let pokId = 0
+            claimPokemon.watch((error, result) => {
+                if (!error) {
+                    pokId = result.args._PokemonId
+                }
+            })
+            wait(1000)
 
             // uint latitudeInt, uint latitudeFloat, uint longitudeInt, uint longitudeFloat
             await pokemon.findPokemon(location[0].toNumber(), location[2].toNumber(), location[1].toNumber(), location[3].toNumber(), { from: accounts[1] })
-            console.log("gpsCheck fail: ", user2)
-            console.log("user address:", user)
-            console.log("user claim pokemon with name: ", pokemonName)
-
-            const hashloc = await pokemon.getHashLoc()
-            console.log(hashloc)
+            console.log("user claim pokemon with id: ", pokId)
 
             const res = await pokemon.getMyPokemons({ from: accounts[1] })
             console.log("user has pokemon: ", res)
 
             // stop listening to event
+            claimPokemon.stopWatching()
             addPokemon.stopWatching()
         })
     })

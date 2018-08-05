@@ -102,10 +102,10 @@ contract PokemonPlatform is Ownable, gps{
       //rateLimitCheck()
       hasProfile()
       returns(bool) {
-        if (!gpsCheck(latitudeInt, latitudeFloat, longitudeInt, longitudeFloat)) {
-          emit GpsCheckFailed(1);
-          return false;
-        }
+        //if (!gpsCheck(latitudeInt, latitudeFloat, longitudeInt, longitudeFloat)) {
+        //  emit GpsCheckFailed(1);
+        //  return false;
+        //}
         // log access
         lastAccess[msg.sender].timestamp = block.timestamp;
         lastAccess[msg.sender].latitudeInt = latitudeInt;
@@ -127,7 +127,6 @@ contract PokemonPlatform is Ownable, gps{
 
             // read Pokemons
             Pokemon storage newPokemon = allPokemons[pId - 1];
-            //emit ClaimPokemon(pId, msg.sender, newPokemon.name, newPokemon.url,
             emit ClaimPokemon(pId, msg.sender, newPokemon.name, newPokemon.url,
               newPokemon.bio, newPokemon.generation, newPokemon.releaseTimestamp);
             return true;
