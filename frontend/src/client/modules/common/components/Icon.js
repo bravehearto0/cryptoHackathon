@@ -2,12 +2,10 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import * as icons from 'react-feather';
 
-import { colors } from '../../../styles/styled';
-
 const defaultStyle = {
   marginRight: '9px',
-  verticalAlign: 'middle',
-  color: colors.b3,
+  verticalAlign: '-5px',
+  color: 'white',
   opacity: 0.7,
 };
 

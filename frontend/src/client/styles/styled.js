@@ -21,7 +21,7 @@ export const content = {
 export const colors = {
   b1: '#3E92CC',
   b2: '#87B38D',
-  b3: '#EED92A',
+  b3: '#2196f3',
   black: '#01161E',
   blurGray: '#f1f1f1',
   lightGray: '#eaeaea',
