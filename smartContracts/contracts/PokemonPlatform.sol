@@ -52,7 +52,8 @@ contract PokemonPlatform is Ownable, gps{
     // the generation number and total count
     //event NewPokemonGenerationReleased(uint generation, uint totalCount);
     event ClaimPokemon(uint _PokemonId , address indexed _owner, string _name, string _url, string _bio, uint _generation, uint _releaseTimestamp);
-    event NoAvailablePokemon(address indexed _user, uint _longitudeFloat);
+    event NoAvailablePokemon(address indexed _user);
+    event GpsCheckFailed(address indexed _user);
     event PokemonReleased(uint _currentGeneration, uint _amount);
     event PokemonPopulated(uint _id, string _name, string _url, string _bio, uint32 _generation, uint32 _releaseTimestamp);
     event UserProfileCreated(string _name, address indexed _address, string _photoUrl);
@@ -95,10 +96,11 @@ contract PokemonPlatform is Ownable, gps{
 
     // TODO: apply ratelimit and GPS spoofing checks - user claim ownership of Pokemon
     function findPokemon(uint latitudeInt, uint latitudeFloat, uint longitudeInt, uint longitudeFloat) external
-      rateLimitCheck()
+      //rateLimitCheck()
       hasProfile()
       returns(bool) {
         if (!gpsCheck(latitudeInt, latitudeFloat, longitudeInt, longitudeFloat)) {
+          emit GpsCheckFailed(msg.sender);
           return false;
         }
         // log access
@@ -123,13 +125,13 @@ contract PokemonPlatform is Ownable, gps{
             // read Pokemons
             Pokemon memory newPokemon = allPokemons[pId - 1];
             //emit ClaimPokemon(pId, msg.sender, newPokemon.name, newPokemon.url,
-            emit ClaimPokemon(pId, msg.sender, "name", newPokemon.url,
+            emit ClaimPokemon(pId, msg.sender, newPokemon.name, newPokemon.url,
               newPokemon.bio, newPokemon.generation, newPokemon.releaseTimestamp);
             return true;
           }
         }
 
-        emit NoAvailablePokemon(msg.sender, longitudeFloat);
+        emit NoAvailablePokemon(msg.sender);
         return false;
     }
 
@@ -205,10 +207,9 @@ contract PokemonPlatform is Ownable, gps{
                 // add geoHash to pokemonToLocation
                 uint laInt;
                 uint laFloat;
-                (laInt, laFloat) = generateRandomLocation();
                 uint loInt;
                 uint loFloat;
-                (loInt, loFloat) = generateRandomLocation();
+                (laInt, laFloat, loInt, loFloat) = generateRandomLocation();
                 Access memory newAccess = Access(block.timestamp, laInt, loInt, laFloat, loFloat);
                 pokemonToLocation[i + 1] = newAccess;
                 // add geoHash to lottery

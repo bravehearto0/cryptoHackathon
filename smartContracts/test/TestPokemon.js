@@ -53,12 +53,22 @@ contract('PokemonPlatform', (accounts) => {
                 }
             })
 
+            const gpsCheck = pokemon.GpsCheckFailed()
+            let user2 = '0x0'
+            gpsCheck.watch((error, result) => {
+                if (!error) {
+                    user2 = result.args._user
+                }
+            })
+
             // uint latitudeInt, uint latitudeFloat, uint longitudeInt, uint longitudeFloat
             await pokemon.findPokemon(location[0].toNumber(), location[2].toNumber(), location[1].toNumber(), location[3].toNumber(), { from: accounts[1] })
+            console.log("gpsCheck fail: ", user2)
             console.log("user address:", user)
             console.log("user claim pokemon with name: ", pokemonName)
 
             // stop listening to event
+            gpsCheck.stopWatching()
             notClaimPokemon.stopWatching()
             claimPokemon.stopWatching()
             addPokemon.stopWatching()

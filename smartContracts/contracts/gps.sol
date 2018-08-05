@@ -3,6 +3,8 @@ pragma solidity ^0.4.22;
 contract gps {
 
   function differences(uint intOne, uint intTwo, uint floatOne, uint floatTwo) internal pure returns(uint, uint) {
+    intOne = intOne % 360;
+    intTwo = intTwo % 360;
     floatOne = floatOne % (10 ** 6);
     floatTwo = floatTwo % (10 ** 6);
     int intDiff = int(intOne) - int(intTwo);
@@ -41,6 +43,8 @@ contract gps {
   // not really a geoHash, a geoHash like hash generation
   function generateGeoHash(uint latitudeInt, uint latitudeFloat, uint longitudeInt, uint longitudeFloat, uint currentGeneration) internal pure returns (bytes32) {
     // some sanity check, only last 6 digits are meaningful for latitude and longitude float
+    latitudeInt = latitudeInt % 360;
+    longitudeInt = longitudeInt % 360;
     latitudeFloat = latitudeFloat % (10 ** 6);
     longitudeFloat = longitudeFloat % (10 ** 6);
     if (currentGeneration == 0) {
@@ -57,14 +61,16 @@ contract gps {
     return keccak256(abi.encodePacked(latitudeInt, longitudeInt, latitudeFloat, longitudeFloat));
   }
 
-  function generateRandomLocation() internal view returns(uint, uint) {
-    uint intPart = random() % 360;
-    uint floatPart = random() % (10 ** 6);
-    return (intPart, floatPart);
+  function generateRandomLocation() internal view returns(uint, uint, uint, uint) {
+    uint intPart = random(1) % 360;
+    uint intPart2 = random(2) % 360;
+    uint floatPart = random(3) % (10 ** 6);
+    uint floatPart2 = random(4) % (10 ** 6);
+    return (intPart, floatPart, intPart2, floatPart2);
   }
 
-  function random() private view returns (uint32) {
-       return uint32(uint256(keccak256(abi.encodePacked(block.timestamp, block.difficulty)))% (2 ** 32));
+  function random(uint rnd) private view returns (uint32) {
+       return uint32(uint256(keccak256(abi.encodePacked(block.timestamp, block.difficulty, rnd)))% (2 ** 32));
    }
 
 }
