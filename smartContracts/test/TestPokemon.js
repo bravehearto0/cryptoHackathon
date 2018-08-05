@@ -56,7 +56,8 @@ contract('PokemonPlatform', (accounts) => {
             wait(1000)
 
             // uint latitudeInt, uint latitudeFloat, uint longitudeInt, uint longitudeFloat
-            await pokemon.findPokemon(location[0].toNumber(), location[2].toNumber(), location[1].toNumber(), location[3].toNumber(), { from: accounts[1] })
+            console.log("location: ", location)
+            await pokemon.findPokemon(location[0].toNumber(), location[1].toNumber(), location[2].toNumber(), location[3].toNumber(), { from: accounts[1] })
             console.log("user claim pokemon with id: ", pokId)
 
             const res = await pokemon.getMyPokemons({ from: accounts[1] })

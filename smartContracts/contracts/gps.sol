@@ -41,8 +41,8 @@ contract gps {
   // not really a geoHash, a geoHash like hash generation
   function generateGeoHash(int latitudeInt, uint latitudeFloat, int longitudeInt, uint longitudeFloat, uint currentGeneration) internal pure returns (bytes32) {
     // some sanity check, only last 6 digits are meaningful for latitude and longitude float
-    latitudeInt = (latitudeInt + 180) % 360;
-    longitudeInt = (longitudeInt + 180) % 360;
+    latitudeInt = (latitudeInt) % 360;
+    longitudeInt = (longitudeInt) % 360;
     latitudeFloat = latitudeFloat % (10 ** 6);
     longitudeFloat = longitudeFloat % (10 ** 6);
     if (currentGeneration == 0) {

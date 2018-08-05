@@ -238,8 +238,6 @@ contract PokemonPlatform is Ownable, gps{
     }
 
 
-
-
     // return the user getProfile
     function getProfile() external view hasProfile() returns (string, address, string, uint) {
         UserProfile memory user = ownerToProfile[msg.sender];
