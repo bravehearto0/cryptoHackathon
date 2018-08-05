@@ -200,7 +200,7 @@ const serverConfig = webpackMerge.smart(cloneDeep(createBaseConfig("server")), {
   module: {
     rules: [
       {
-        test: /\.scss$/,
+        test: /\.(css|scss)$/,
         use: __DEV__ ? [
           { loader: 'isomorphic-style-loader' },
           { loader: 'css-loader', options: { sourceMap: true } },
@@ -276,7 +276,7 @@ const webConfig = webpackMerge.smart(cloneDeep(createBaseConfig("web")), {
   module: {
     rules: [
       {
-        test: /\.scss$/,
+        test: /\.(css|scss)$/,
         use: __DEV__ ? [
           { loader: 'style-loader' },
           { loader: 'css-loader', options: { sourceMap: true, importLoaders: 1 } },
