@@ -1,4 +1,6 @@
-contract Gps {
+pragma solidity ^0.4.22;
+
+contract gps {
   modifier gpsCheck(uint latitudeInt, uint latitudeFloat, uint longitudeInt, uint longitudeFloat) {
     Access lastAccess = lastAccess[msg.sender];
     if (lastAccess.isValue) {
@@ -7,13 +9,13 @@ contract Gps {
       (intDiff, floatDiff) = gpsDifference(lastAccess, latitudeInt, latitudeFloat, longitudeInt, longitudeFloat);
       require(
         (intDiff < gpsThresholdInt) || (intDiff == gpsThresholdInt && floatDiff == gpsThresholdFloat)
-        "user rate limited. rateLimitInterval is " + string(rateLimitInterval)
+        //"user rate limited. rateLimitInterval is " + string(rateLimitInterval)
         );
     }
     _;
   }
 
-  function differences(uint intOne, uint intTwo, uint floatOne, uint floatTwo) private pure return(uint, uint) {
+  function differences(uint intOne, uint intTwo, uint floatOne, uint floatTwo) private pure returns (uint, uint) {
     int intDiff = intOne - intTwo;
     int floatDiff = floatOne - floatTwo;
     if ((intDiff > 0 && floatDiff < 0) || intDiff > 0 && floatDiff < 0)) {
