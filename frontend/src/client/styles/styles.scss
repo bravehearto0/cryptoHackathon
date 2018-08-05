@@ -80,7 +80,7 @@ $border: 1px solid $border-color;
 /* layout sizes */
 $header-height: 80px;
 $header-height-short: $header-height - 30px;
-$footer-height: 125px;
+$footer-height: 78px;
 $sidebar-width: 220px;
 
 $btn-primary: white;
@@ -96,25 +96,18 @@ html, body {
   margin-bottom: 0;
 }
 
-.gnb, .header-overlay {
-  position: fixed;
-  top: 0;
-  width: 100%;
-  height: $header-height;
-  border-bottom: $border;
-  background: $bgcolor;
-  z-index: 999;
+.gnb {
+  overflow: visible;
+  height: 0;
   .navbar {
-    overflow: visible;
-;
-    padding: 20px;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    display: block;
+    background: $bgcolor;
+    padding: 0;
     .logo {
       height: 26px;
-    }
-    .sidebar-toggle {
-      z-index: 2;
-      padding: 7px 14px 7px 7px;
-      display: inline-block;
     }
     .nav-link {
       font-size: 1.25em;
@@ -124,25 +117,12 @@ html, body {
   }
 }
 
-.sidebar {
-  width: $sidebar-width;
-  position: fixed;
-  left: 0;
-  top: 0;
-  background: transparent;
-  border: 0;
-  height: 100%;
-  padding-top: $header-height;
-  z-index: 997;
-}
-
 .wrapper {
   box-sizing: border-box;
-  padding-top: $header-height;
-  padding-left: $sidebar-width;
   position: relative;
   width: 100%;
   min-height: 100%;
+  padding-bottom: $footer-height;
 }
 
 .content {
@@ -166,7 +146,6 @@ footer {
   width: 100%;
   box-sizing: border-box;
   margin-left: $sidebar-width;
-  padding-left: $sidebar-width;
   left: -$sidebar-width - 1px;
 }
 

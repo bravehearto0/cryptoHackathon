@@ -4,7 +4,7 @@ import Helmet from 'react-helmet';
 import { Button } from 'reactstrap';
 
 const pageNotFound = () => (
-  <section className="text-center mt-4 mb-4">
+  <section className="text-center mb-4">
     <Helmet
       title='Apollo Starter Kit - Page not found'
       meta={[{
