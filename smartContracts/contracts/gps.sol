@@ -92,6 +92,3 @@ contract gps {
     return string(bytesStringTrimmed);
 }
 }
-
-
-}
