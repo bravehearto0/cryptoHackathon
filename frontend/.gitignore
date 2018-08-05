@@ -1,29 +1,15 @@
-# See https://help.github.com/ignore-files/ for more about ignoring files.
-
-# Dependencies
-node_modules/
-
-# Compiled output
+/.idea
+/.history
+/.vscode
+/.cache
+.tmp
+node_modules
 build
-
-# Runtime data
-database.sqlite
-
-# Test coverage
-coverage
-
-# Logs
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-# Editors and IDEs
-.idea
-.vscode/*
-!.vscode/settings.json
-!.vscode/tasks.json
-!.vscode/launch.json
-!.vscode/extensions.json
-
-# Misc
+.gqlconfig
+.expo
+*.log
+*.sqlite3
 .DS_Store
+jsconfig.json
+public
+*.iml

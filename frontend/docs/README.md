@@ -1,23 +1,28 @@
-## Documentation
+# Documentation
 
-### General
 
-* [Getting Started](./getting-started.md)
-* [React Style Guide](./react-style-guide.md)
-* [How to configure text editors and IDEs](./how-to-configure-text-editors.md)
-* [Data fetching with WHATWG Fetch](./data-fetching.md)
-* [Testing your application](./testing-your-application.md)
+### Things to be documented
 
-### Questions
+- Getting Started
+- Repo and Application structure
+  - How things are organized
+  - Where to find some important files
+- Developing this repo
+- Build and deploy, mobile apps
+- Best practices
+- How to configure the project
+  - using custom GraphQL server
+  - setting up oauth stuff
+  - mailer
+  - spin
 
-* [Which module bundler should I use?](https://github.com/kriasoft/react-starter-kit/issues/3)
-* [Which Flux implementation should I use?](https://github.com/kriasoft/react-starter-kit/issues/22)
 
-### Recipes
+- Concepts
+  - [Features](./features.md)
+  - How requests are processed
+  - How auth works
+  - Resolvers, batching
 
-* [How to Implement Routing and Navigation](./recipes/how-to-implement-routing.md)
-* [How to Integrate Redux](./recipes/how-to-integrate-redux.md)
-* [How to Integrate React Intl](./recipes/how-to-integrate-react-intl.md)
-* [How to Integrate Disqus](./recipes/how-to-integrate-disqus.md)
-* [How to Use Sass/SCSS](./recipes/how-to-use-sass.md)
-* [How to Configure Facebook Login](./recipes/how-to-configure-facebook-login.md)
+
+[Project Wishlist](./wishlist.md)
+
