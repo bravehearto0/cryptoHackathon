@@ -52,10 +52,19 @@ export function getAllPokemons() {
 
       contract.deployed().then(async function(instance) {
         pokemonInstance = instance;
-        await pokemonInstance.createProfile("hackathon", "http://www.aws.com/xsTwtA", { from: account });
         var result =  await pokemonInstance.getAllPokemons({ from: account });
-        console.log(result);
-        res(result);
+        const ids = result.map(n => n.toNumber()).map(id =>
+          pokemonInstance.getPokemon(id)
+          .then(([name, url, bio, id2, id]) => ({
+            name,
+            url,
+            bio,
+            id2: id2.toNumber(),
+            id: id.toNumber(),
+          }))
+        );
+        const pokes = await Promise.all(ids);
+        res(pokes);
       }).catch(function(err) {
         console.log(err.message);
       });

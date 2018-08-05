@@ -8,7 +8,7 @@ import background from '!file-loader!../assets/background.jpg';
 // eslint-disable-next-line
 import profile from '!file-loader!../assets/profile.jpg';
 import Pokemons from './Pokemons.js';
-import {getProfile} from '../reducer.js';
+import {getAllPokemons} from '../reducer.js';
 
 const Wrapper = styled.div`
   height: 93vw;
@@ -55,11 +55,11 @@ const ProfileName = Profile.extend`
 
 class Home extends React.Component {
   static propTypes = {
-    getProfile: PropTypes.func,
+    getAllPokemons: PropTypes.func,
   };
 
   componentDidMount() {
-    this.props.getProfile();
+    this.props.getAllPokemons();
   }
 
   render() {
@@ -84,9 +84,9 @@ class Home extends React.Component {
 
 export default connect(
   state => ({
-    newProp: state.newProp,
+    pokemons: state.pokemons,
   }),
   {
-    getProfile,
+    getAllPokemons,
   },
 )(Home);

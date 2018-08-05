@@ -1,13 +1,12 @@
 import { createAction, handleAction } from 'redux-actions';
 import * as api from './api.js';
 
-const defaultState = { profile: null };
+const defaultState = { pokemons: null };
 
 // export actions
 export const getProfile = createAction('getProfile',
   async () => {
     const result = await api.getAllPokemons();
-    console.log('result', result);
     return { result };
   },
 );
@@ -33,18 +32,16 @@ export const releasePokemon = createAction('releasePokemon',
 
 export const getAllPokemons = createAction('getAllPokemons',
   async () => {
-    const result = await api.getAllPokemons();
-    console.log('result', result);
-    return { result };
+    const pokemons = await api.getAllPokemons();
+    console.log('pokemons', pokemons);
+    return { pokemons };
   },
 );
 
 const reducer = handleAction(
-  getProfile,
-  async (state, { payload }) => {
-    console.log('state', state);
-    console.log('payload', payload);
-    return state;
+  getAllPokemons,
+  (state, { payload }) => {
+    return { pokemons: payload};
   },
   defaultState,
 );
