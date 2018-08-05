@@ -33,6 +33,8 @@ contract('PokemonPlatform', (accounts) => {
             const info = await pokemon.getPokemon(releasedPokemon[0].toNumber(), { from: accounts[1] })
             console.log("user checks the info of pokemon: ", info)
 
+            
+
             // stop listening to event
             addPokemon.stopWatching()
         })
