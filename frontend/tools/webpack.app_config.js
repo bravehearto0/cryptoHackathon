@@ -49,6 +49,7 @@ const dependencyPlatforms = {
   "dataloader": "server",
   "expo": ["ios", "android"],
   "web3": ["web", "server"],
+  "truffle-contract": ["web", "server"],
   "express": "server",
   "graphql-server-express": "server",
   "graphql-subscriptions": "server",
