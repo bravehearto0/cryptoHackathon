@@ -73,18 +73,15 @@ contract PokemonPlatform is Ownable, gps{
       _;
     }
 
-    modifier gpsCheck(uint latitudeInt, uint latitudeFloat, uint longitudeInt, uint longitudeFloat) {
+    function gpsCheck(uint latitudeInt, uint latitudeFloat, uint longitudeInt, uint longitudeFloat) private view returns(bool) {
       Access memory la = lastAccess[msg.sender];
       if (la.timestamp != 0) {
         uint intDiff;
         uint floatDiff;
         (intDiff, floatDiff) = gpsDifference(la.latitudeInt, la.latitudeFloat, la.longitudeInt, la.longitudeFloat, latitudeInt, latitudeFloat, longitudeInt, longitudeFloat);
-        require(
-          (intDiff < gpsThresholdInt) || (intDiff == gpsThresholdInt && floatDiff <= gpsThresholdFloat),
-          "user rate gps violated."
-          );
+        return (intDiff < gpsThresholdInt) || (intDiff == gpsThresholdInt && floatDiff <= gpsThresholdFloat);
       }
-      _;
+      return true;
     }
 
     modifier hasProfile() {
@@ -96,9 +93,11 @@ contract PokemonPlatform is Ownable, gps{
     // TODO: apply ratelimit and GPS spoofing checks - user claim ownership of Pokemon
     function findPokemon(uint latitudeInt, uint latitudeFloat, uint longitudeInt, uint longitudeFloat) external
       rateLimitCheck()
-      //gpsCheck(latitudeInt, latitudeFloat, longitudeInt, longitudeFloat)
       hasProfile()
       returns(bool) {
+        if (!gpsCheck(latitudeInt, latitudeFloat, longitudeInt, longitudeFloat)) {
+          return false;
+        }
         // log access
         lastAccess[msg.sender].timestamp = block.timestamp;
         lastAccess[msg.sender].latitudeInt = latitudeInt;
