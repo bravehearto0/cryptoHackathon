@@ -1,0 +1,21 @@
+{
+  "name": "cryptoHackathon",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bravehearto0/cryptoHackathon.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/bravehearto0/cryptoHackathon/issues"
+  },
+  "homepage": "https://github.com/bravehearto0/cryptoHackathon#readme",
+  "devDependencies": {}
+}

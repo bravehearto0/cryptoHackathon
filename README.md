@@ -1,11 +1,16 @@
 # cryptoHackathon
 
-
 ## Server
 
-Install truffle
+Install nvm
 ```
-npm install -g truffle
+curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.11/install.sh | bash
+```
+
+Install node v8
+```
+nvm install v8
+nvm use v8
 ```
 
 Go to smart contract folder
@@ -13,11 +18,15 @@ Go to smart contract folder
 cd smartContracts
 ```
 
-Compile
+Install dependencies
 ```
-truffle compile
+npm i
 ```
 
+compile 
+```
+npm run build
+```
 
 ## Frontend
 
