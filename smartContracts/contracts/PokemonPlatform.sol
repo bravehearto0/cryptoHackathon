@@ -65,15 +65,29 @@ contract PokemonPlatform is Ownable, gps{
     uint gpsThresholdInt;
     uint gpsThresholdFloat;
 
-    constructor(uint timeInterval, uint gpsInt, uint gpsFloat) public {
-      rateLimitInterval = timeInterval;
-      gpsThresholdInt = gpsInt;
-      gpsThresholdFloat = gpsFloat;
+    constructor() public {
+      rateLimitInterval = 1 hours; //timeInterval;
+      gpsThresholdInt = 100; //gpsInt;
+      gpsThresholdFloat = 100; //gpsFloat;
     }
 
     modifier rateLimitCheck() {
       if (lastAccess[msg.sender].timestamp != 0) {
         require(lastAccess[msg.sender].timestamp + rateLimitInterval < now);
+      }
+      _;
+    }
+
+    modifier gpsCheck(uint latitudeInt, uint latitudeFloat, uint longitudeInt, uint longitudeFloat) {
+      Access memory la = lastAccess[msg.sender];
+      if (la.timestamp != 0) {
+        uint intDiff;
+        uint floatDiff;
+        (intDiff, floatDiff) = gpsDifference(la.latitudeInt, la.latitudeFloat, la.longitudeInt, la.longitudeFloat, latitudeInt, latitudeFloat, longitudeInt, longitudeFloat);
+        require(
+          (intDiff < gpsThresholdInt) || (intDiff == gpsThresholdInt && floatDiff == gpsThresholdFloat)
+          //"user rate limited. rateLimitInterval is " + string(rateLimitInterval)
+          );
       }
       _;
     }
@@ -84,17 +98,20 @@ contract PokemonPlatform is Ownable, gps{
       rateLimitCheck()
       gpsCheck(latitudeInt, latitudeFloat, longitudeInt, longitudeInt)
       returns(bool) {
+        // log access
+        lastAccess[msg.sender].timestamp = block.timestamp;
+        lastAccess[msg.sender].latitudeInt = latitudeInt;
+        lastAccess[msg.sender].longitudeInt = longitudeInt;
+        lastAccess[msg.sender].latitudeFloat = latitudeFloat;
+        lastAccess[msg.sender].longitudeFloat = longitudeFloat;
+        // search for available Pokemon
         for (uint i=0; i < allPokemons.length; i++) {
             // release time is earlier than current timestamp -> released Pokemon
             if(allPokemons[i].generation == currentGeneration && ownerToPokemon[i] == address(0)){
                 ownerToPokemon[i] = msg.sender;
                 ownerToProfile[msg.sender].numPokemon += 1;
                 numClaimedPokemon += 1;
-                lastAccess[msg.sender].timestamp = block.timestamp;
-                lastAccess[msg.sender].latitudeInt = latitudeInt;
-                lastAccess[msg.sender].longitudeInt = longitudeInt;
-                lastAccess[msg.sender].latitudeFloat = latitudeFloat;
-                lastAccess[msg.sender].longitudeFloat = longitudeFloat;
+
                 emit ClaimPokemon(i, msg.sender, latitudeInt, latitudeFloat, longitudeInt, longitudeFloat);
                 return true;
             }
