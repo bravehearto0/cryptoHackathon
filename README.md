@@ -32,11 +32,6 @@ nvm install 6
 nvm use 6
 ```
 
-Install yarn 
-```
-npm i -g yarn
-```
-
 Go into frontend folder
 ```
 cd frontend
@@ -44,12 +39,12 @@ cd frontend
 
 Install dependencies
 ```
-yarn
+npm i
 ```
 
 Start hacking
 ```
-yarn start
+npm run watch
 ```
 
 View the app
