@@ -5,7 +5,7 @@ import styled from 'styled-components';
 
 // eslint-disable-next-line
 import samplePokemon from '!file-loader!../assets/sample-pokemon.jpg';
-import pokemons from './pokemon-sample.js';
+import pokemons from '../../../../../../data/kitties.json';
 
 const Wrapper = styled.ul`
   width: 100%;
@@ -37,7 +37,7 @@ class Pokemons extends React.Component {
         {
           pokemons.map((pokemon, idx) => (
             <Pokemon key={idx}>
-              <img src={samplePokemon} />
+              <img src={pokemon.image_url} />
               {pokemon.name}
             </Pokemon>
           ))

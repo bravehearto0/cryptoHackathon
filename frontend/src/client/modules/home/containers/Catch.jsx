@@ -8,8 +8,7 @@ import {getProfile} from '../reducer.js';
 
 const Wrapper = styled.div`
   height: 93vw;
-  padding: 0 4vw;
-  margin: 30vw 0;
+  padding: 30vw 4vw;
 `;
 
 class Catch extends React.Component {
