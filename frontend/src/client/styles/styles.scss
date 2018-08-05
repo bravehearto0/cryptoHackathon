@@ -80,7 +80,7 @@ $border: 1px solid $border-color;
 /* layout sizes */
 $header-height: 80px;
 $header-height-short: $header-height - 30px;
-$footer-height: 78px;
+$footer-height: 72px;
 $sidebar-width: 220px;
 
 $btn-primary: white;
@@ -135,7 +135,6 @@ html, body {
   .content {
     padding-bottom: 0;
   }
-  padding-bottom: $footer-height;
 }
 
 footer {

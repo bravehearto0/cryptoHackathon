@@ -7,6 +7,7 @@ import styled from 'styled-components';
 import background from '!file-loader!../assets/background.jpg';
 // eslint-disable-next-line
 import profile from '!file-loader!../assets/profile.jpg';
+import Pokemons from './Pokemons.js';
 
 const Wrapper = styled.div`
   height: 93vw;
@@ -47,7 +48,7 @@ const ProfileName = Profile.extend`
     color: #278be3;
     position: relative; 
     top: 83vw;
-    font-size: 27px;
+    font-size: 7vw;
   }
 `;
 
@@ -58,17 +59,20 @@ class Home extends React.Component {
 
   render() {
     return (
-      <Wrapper>
-        <Background>
-          <img src={background} />
-        </Background>
-        <Profile>
-          <img src={profile} />
-        </Profile>
-        <ProfileName>
-          <span>Hello</span>
-      </ProfileName>
-      </Wrapper>
+      <div>
+        <Wrapper>
+          <Background>
+            <img src={background} />
+          </Background>
+          <Profile>
+            <img src={profile} />
+          </Profile>
+          <ProfileName>
+            <span>Youngjae Ji</span>
+          </ProfileName>
+        </Wrapper>
+        <Pokemons />
+      </div>
     );
   }
 }
