@@ -88,7 +88,7 @@ contract PokemonPlatform is Ownable, gps{
     }
 
     modifier hasProfile() {
-        require(ownerToProfile[msg.sender].userAddress == address(0), "user has no profile; please call createProfile function");
+        require(ownerToProfile[msg.sender].userAddress != address(0), "user has no profile; please call createProfile function");
         _;
     }
 
@@ -189,7 +189,7 @@ contract PokemonPlatform is Ownable, gps{
     }
 
     // owner release new pokemon generation
-    function releasePokemon() public onlyOwner {
+    function releasePokemon() public onlyOwner() {
         // release Pokemons with nextGeneration
         uint amount = 0;
         for (uint i=0; i < allPokemons.length; i++) {
