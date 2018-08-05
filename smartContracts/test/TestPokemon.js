@@ -37,29 +37,6 @@ contract('PokemonPlatform', (accounts) => {
             const location = await pokemon.getPokemonLocation(releasedPokemon[0].toNumber(), { from: accounts[0] })
             console.log("owner check pokemon location: ", location)
 
-            const claimPokemon = pokemon.ClaimPokemon()
-            let pokemonName = new String()
-            addPokemon.watch((error, result) => {
-                if (!error) {
-                    pokemonName = result.args._name
-                }
-            })
-
-            const notClaimPokemon = pokemon.NoAvailablePokemon()
-            let user = '0x0'
-            notClaimPokemon.watch((error, result) => {
-                if (!error) {
-                    user = result.args._user
-                }
-            })
-
-            const gpsCheck = pokemon.GpsCheckFailed()
-            let user2 = '0x0'
-            gpsCheck.watch((error, result) => {
-                if (!error) {
-                    user2 = result.args._user
-                }
-            })
 
             // uint latitudeInt, uint latitudeFloat, uint longitudeInt, uint longitudeFloat
             await pokemon.findPokemon(location[0].toNumber(), location[2].toNumber(), location[1].toNumber(), location[3].toNumber(), { from: accounts[1] })
@@ -67,10 +44,13 @@ contract('PokemonPlatform', (accounts) => {
             console.log("user address:", user)
             console.log("user claim pokemon with name: ", pokemonName)
 
+            const hashloc = await pokemon.getHashLoc()
+            console.log(hashloc)
+
+            const res = await pokemon.getMyPokemons({ from: accounts[1] })
+            console.log("user has pokemon: ", res)
+
             // stop listening to event
-            gpsCheck.stopWatching()
-            notClaimPokemon.stopWatching()
-            claimPokemon.stopWatching()
             addPokemon.stopWatching()
         })
     })
