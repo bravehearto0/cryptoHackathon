@@ -1,6 +1,7 @@
 import React from 'react';
 import { Route } from 'react-router-dom';
 
+import './containers/Home.scss';
 import Home from './containers/Home';
 // import reducers from './reducers';
 
