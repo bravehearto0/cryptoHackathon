@@ -52,7 +52,7 @@ contract PokemonPlatform is Ownable, gps{
     // the generation number and total count
     //event NewPokemonGenerationReleased(uint generation, uint totalCount);
     event ClaimPokemon(uint _PokemonId , address indexed _owner, string _name, string _url, string _bio, uint _generation, uint _releaseTimestamp);
-    event NoAvailablePokemon(address indexed _user);
+    event NoAvailablePokemon(address indexed _user, uint _longitudeFloat);
     event PokemonReleased(uint _currentGeneration, uint _amount);
     event PokemonPopulated(uint _id, string _name, string _url, string _bio, uint32 _generation, uint32 _releaseTimestamp);
     event UserProfileCreated(string _name, address indexed _address, string _photoUrl);
@@ -122,13 +122,14 @@ contract PokemonPlatform is Ownable, gps{
 
             // read Pokemons
             Pokemon memory newPokemon = allPokemons[pId - 1];
-            emit ClaimPokemon(pId, msg.sender, newPokemon.name, newPokemon.url,
+            //emit ClaimPokemon(pId, msg.sender, newPokemon.name, newPokemon.url,
+            emit ClaimPokemon(pId, msg.sender, "name", newPokemon.url,
               newPokemon.bio, newPokemon.generation, newPokemon.releaseTimestamp);
             return true;
           }
         }
 
-        emit NoAvailablePokemon(msg.sender);
+        emit NoAvailablePokemon(msg.sender, longitudeFloat);
         return false;
     }
 
