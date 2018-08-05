@@ -1,6 +1,6 @@
-// eslint-global web3
+/* global web3 */
 
-import Web3 from 'web3'
+import Web3 from 'web3';
 import abiFile from './PokemonPlatform.json';
 
 let web3js;
@@ -8,9 +8,14 @@ let contract;
 const CONTRACT_ADDRESS = '0xe3bf2f428ede719dc1b6f2320f4558cba726cb66';
 
 export const init = () => {
-  web3js = new Web3(web3.currentProvider);
-  contract = new web3js.eth.Contract(abiFile.abi, CONTRACT_ADDRESS);
+  if (__CLIENT__ && !web3js) {
+    web3js = new Web3(web3.currentProvider);
+    contract = new web3js.eth.Contract(abiFile.abi, CONTRACT_ADDRESS);
+    window.contract = contract;
+  }
 };
+
+init();
 
 export function getMyPokemons() {
   return contract.methods.getMyPokemons().call()
@@ -23,7 +28,7 @@ export function getMyPokemons() {
           url: raw[1],
           bio: raw[2],
           generation: raw[3],
-          releaseTimestamp: raw[4]
+          releaseTimestamp: raw[4],
         };
       });
     });
@@ -41,7 +46,7 @@ export function getAllPokemons() {
           url: raw[1],
           bio: raw[2],
           generation: raw[3],
-          releaseTimestamp: raw[4]
+          releaseTimestamp: raw[4],
         };
       });
     });
@@ -59,7 +64,7 @@ export function getUnclaimedPokemons() {
           url: raw[1],
           bio: raw[2],
           generation: raw[3],
-          releaseTimestamp: raw[4]
+          releaseTimestamp: raw[4],
         };
       });
     });
@@ -78,5 +83,3 @@ export function getProfile() {
     };
   });
 }
-
-init();

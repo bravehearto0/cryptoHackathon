@@ -1,4 +1,5 @@
 import { createAction, handleAction } from 'redux-actions';
+import * as api from './api.js';
 
 const defaultState = { profile: null };
 
@@ -7,9 +8,11 @@ export const getProfile = createAction('getProfile');
 
 const reducer = handleAction(
   getProfile,
-  (state, { payload }) => {
+  async (state, { payload }) => {
+    const result = await api.getAllPokemons();
     console.log('state', state);
     console.log('payload', payload);
+    console.log('result', result);
     return state;
   },
   defaultState,
