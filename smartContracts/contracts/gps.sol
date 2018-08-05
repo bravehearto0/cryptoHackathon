@@ -56,4 +56,15 @@ contract gps {
 
     return keccak256(abi.encodePacked(latitudeInt, longitudeInt, latitudeFloat, longitudeFloat));
   }
+
+  function generateRandomLocation() internal view returns(uint, uint) {
+    uint intPart = random() % 360;
+    uint floatPart = random() % (10 ** 6);
+    return (intPart, floatPart);
+  }
+
+  function random() private view returns (uint32) {
+       return uint32(uint256(keccak256(abi.encodePacked(block.timestamp, block.difficulty)))% (2 ** 32));
+   }
+
 }

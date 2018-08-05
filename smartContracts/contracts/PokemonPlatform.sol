@@ -38,13 +38,16 @@ contract PokemonPlatform is Ownable, gps{
     mapping(address => UserProfile) ownerToProfile;
 
     // the ownership of the pokemonId  => owner address
-    mapping(uint => address) public ownerToPokemon;
+    mapping(uint => address) public pokemonToOwner;
 
     // store the location of pokemon, byte32 is the hash versioned of the geohash
     mapping(bytes32 => uint) public lottery;
 
     // the last access user have. used to GPS check and rate limit
     mapping(address => Access) public lastAccess;
+
+    // hacking geoLocations data for dashboard and display
+    mapping(uint => Access) public pokemonToLocation;
 
     // the generation number and total count
     //event NewPokemonGenerationReleased(uint generation, uint totalCount);
@@ -109,10 +112,11 @@ contract PokemonPlatform is Ownable, gps{
           bytes32 geoHash = generateGeoHash(latitudeInt, latitudeFloat, longitudeInt, longitudeFloat, generation);
           if(lottery[geoHash] != 0) {
             uint pId = lottery[geoHash];
-            if (ownerToPokemon[pId] != address(0)) {
+            if (pokemonToOwner[pId] != address(0)) {
+                // pokemon has been claimed
                 continue;
             }
-            ownerToPokemon[pId] = msg.sender;
+            pokemonToOwner[pId] = msg.sender;
             ownerToProfile[msg.sender].numPokemon += 1;
             numClaimedPokemon += 1;
 
@@ -139,7 +143,7 @@ contract PokemonPlatform is Ownable, gps{
       uint[] memory v = new uint[](ownerToProfile[msg.sender].numPokemon);
       uint k = 0;
       for (uint i=0; i < allPokemons.length; i++) {
-          if(ownerToPokemon[i] == msg.sender){
+          if(pokemonToOwner[i + 1] == msg.sender){
             // pokemon id is index + 1
               v[k] = i + 1;
               k += 1;
@@ -172,7 +176,7 @@ contract PokemonPlatform is Ownable, gps{
       uint k = 0;
       for (uint i=0; i < allPokemons.length; i++) {
           // release time is earlier than current timestamp -> released Pokemon
-          if(allPokemons[i].releaseTimestamp > 0 && ownerToPokemon[i + 1] == address(0)){
+          if(allPokemons[i].releaseTimestamp > 0 && pokemonToOwner[i + 1] == address(0)){
               v[k] = i + 1;
               k += 1;
           }
@@ -197,6 +201,18 @@ contract PokemonPlatform is Ownable, gps{
                 allPokemons[i].releaseTimestamp = block.timestamp;
                 numReleasedPokemon += 1;
                 amount += 1;
+                // add geoHash to pokemonToLocation
+                uint laInt;
+                uint laFloat;
+                (laInt, laFloat) = generateRandomLocation();
+                uint loInt;
+                uint loFloat;
+                (loInt, loFloat) = generateRandomLocation();
+                Access memory newAccess = Access(block.timestamp, laInt, loInt, laFloat, loFloat);
+                pokemonToLocation[i + 1] = newAccess;
+                // add geoHash to lottery
+                bytes32 hashcode = generateGeoHash(laInt, laFloat, loInt, loFloat, nextGeneration);
+                lottery[hashcode] = i + 1;
             }
         }
         // increment generation counter
@@ -221,6 +237,12 @@ contract PokemonPlatform is Ownable, gps{
     function getProfile() external view hasProfile() returns (string, address, string, uint) {
         UserProfile memory user = ownerToProfile[msg.sender];
         return (user.name, user.userAddress, user.photoUrl, user.numPokemon);
+    }
+
+    // get all pokemon locations , this is for system testing and demo only
+    function getPokemonLocation(uint pokemonId) external view onlyOwner returns(uint, uint, uint, uint) {
+        Access memory access = pokemonToLocation[pokemonId];
+        return (access.latitudeInt, access.longitudeInt, access.latitudeFloat, access.longitudeFloat);
     }
 
 }
