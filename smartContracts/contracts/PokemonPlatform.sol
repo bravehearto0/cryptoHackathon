@@ -22,8 +22,8 @@ contract PokemonPlatform is Ownable, gps{
     // latitudeInt is the integer part of the latitude, latitudeFloat is the float part
     struct Access {
       uint timestamp;
-      uint latitudeInt;
-      uint longitudeInt;
+      int latitudeInt;
+      int longitudeInt;
       uint latitudeFloat;
       uint longitudeFloat;
     }
@@ -77,7 +77,10 @@ contract PokemonPlatform is Ownable, gps{
       _;
     }
 
-    function gpsCheck(uint latitudeInt, uint latitudeFloat, uint longitudeInt, uint longitudeFloat) private view returns(bool) {
+    function gpsCheck(int latitudeInt, uint latitudeFloat, int longitudeInt, uint longitudeFloat) private view returns(bool) {
+      if (latitudeInt >= 180 || latitudeInt <= -180 || longitudeInt >= 180 || longitudeInt <= -180) {
+        return false;
+      }
       Access memory la = lastAccess[msg.sender];
       if (la.timestamp != 0) {
         uint intDiff;
@@ -95,7 +98,7 @@ contract PokemonPlatform is Ownable, gps{
 
 
     // TODO: apply ratelimit and GPS spoofing checks - user claim ownership of Pokemon
-    function findPokemon(uint latitudeInt, uint latitudeFloat, uint longitudeInt, uint longitudeFloat) external
+    function findPokemon(int latitudeInt, uint latitudeFloat, int longitudeInt, uint longitudeFloat) external
       //rateLimitCheck()
       hasProfile()
       returns(bool) {
@@ -205,9 +208,9 @@ contract PokemonPlatform is Ownable, gps{
                 numReleasedPokemon += 1;
                 amount += 1;
                 // add geoHash to pokemonToLocation
-                uint laInt;
+                int laInt;
                 uint laFloat;
-                uint loInt;
+                int loInt;
                 uint loFloat;
                 (laInt, laFloat, loInt, loFloat) = generateRandomLocation();
                 Access memory newAccess = Access(block.timestamp, laInt, loInt, laFloat, loFloat);
@@ -242,9 +245,9 @@ contract PokemonPlatform is Ownable, gps{
     }
 
     // get all pokemon locations , this is for system testing and demo only
-    function getPokemonLocation(uint pokemonId) external view onlyOwner returns(uint, uint, uint, uint) {
+    function getPokemonLocation(uint pokemonId) external view onlyOwner returns(int, uint, int, uint) {
         Access memory access = pokemonToLocation[pokemonId];
-        return (access.latitudeInt, access.longitudeInt, access.latitudeFloat, access.longitudeFloat);
+        return (access.latitudeInt, access.latitudeFloat, access.longitudeInt, access.longitudeFloat);
     }
 
 }

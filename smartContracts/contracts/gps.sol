@@ -2,12 +2,10 @@ pragma solidity ^0.4.22;
 
 contract gps {
 
-  function differences(uint intOne, uint intTwo, uint floatOne, uint floatTwo) internal pure returns(uint, uint) {
-    intOne = intOne % 360;
-    intTwo = intTwo % 360;
+  function differences(int intOne, int intTwo, uint floatOne, uint floatTwo) internal pure returns(uint, uint) {
     floatOne = floatOne % (10 ** 6);
     floatTwo = floatTwo % (10 ** 6);
-    int intDiff = int(intOne) - int(intTwo);
+    int intDiff = intOne - intTwo;
     int floatDiff = int(floatOne) - int(floatTwo);
     if ((intDiff > 0 && floatDiff < 0) || (intDiff > 0 && floatDiff < 0)) {
       if(intDiff < 0) {
@@ -30,7 +28,7 @@ contract gps {
   }
 
   // latitudeFloat is six digits after dot
-  function gpsDifference(uint lastlatitudeInt, uint lastlatitudeFloat, uint lastlongitudeInt, uint lastlongitudeFloat, uint latitudeInt, uint latitudeFloat, uint longitudeInt, uint longitudeFloat) internal pure returns (uint, uint) {
+  function gpsDifference(int lastlatitudeInt, uint lastlatitudeFloat, int lastlongitudeInt, uint lastlongitudeFloat, int latitudeInt, uint latitudeFloat, int longitudeInt, uint longitudeFloat) internal pure returns (uint, uint) {
       uint laIntDiff;
       uint laFloatDiff;
       uint loIntDiff;
@@ -41,32 +39,34 @@ contract gps {
   }
 
   // not really a geoHash, a geoHash like hash generation
-  function generateGeoHash(uint latitudeInt, uint latitudeFloat, uint longitudeInt, uint longitudeFloat, uint currentGeneration) internal pure returns (bytes32) {
+  function generateGeoHash(int latitudeInt, uint latitudeFloat, int longitudeInt, uint longitudeFloat, uint currentGeneration) internal pure returns (bytes32) {
     // some sanity check, only last 6 digits are meaningful for latitude and longitude float
-    latitudeInt = latitudeInt % 360;
-    longitudeInt = longitudeInt % 360;
+    latitudeInt = (latitudeInt + 180) % 360;
+    longitudeInt = (longitudeInt + 180) % 360;
     latitudeFloat = latitudeFloat % (10 ** 6);
     longitudeFloat = longitudeFloat % (10 ** 6);
     if (currentGeneration == 0) {
-      latitudeFloat = 0;
-      longitudeFloat = 0;
-    } else if(currentGeneration <= 2) {
-      latitudeFloat = latitudeFloat - latitudeFloat % (10 ** 5);
-      longitudeFloat = longitudeFloat - longitudeFloat % (10 ** 5);
-    } else {
       latitudeFloat = latitudeFloat - latitudeFloat % (10 ** 4);
       longitudeFloat = longitudeFloat - longitudeFloat % (10 ** 4);
+    } else if(currentGeneration <= 2) {
+      latitudeFloat = latitudeFloat - latitudeFloat % (10 ** 3);
+      longitudeFloat = longitudeFloat - longitudeFloat % (10 ** 3);
+    } else {
+      latitudeFloat = latitudeFloat - latitudeFloat % (10 ** 2);
+      longitudeFloat = longitudeFloat - longitudeFloat % (10 ** 2);
     }
-
     return keccak256(abi.encodePacked(latitudeInt, longitudeInt, latitudeFloat, longitudeFloat));
   }
 
-  function generateRandomLocation() internal view returns(uint, uint, uint, uint) {
-    uint intPart = random(1) % 360;
-    uint intPart2 = random(2) % 360;
-    uint floatPart = random(3) % (10 ** 6);
-    uint floatPart2 = random(4) % (10 ** 6);
-    return (intPart, floatPart, intPart2, floatPart2);
+  // (laInt, laFloat, loInt, loFloat)
+  // for demo purpose, manual tuned this for just the san Franciscoo Bay area.
+  // [37.5000000, 37.800000] and [-122.500000, -122.250000]
+  function generateRandomLocation() internal view returns(int, uint, int, uint) {
+    int laInt = 37;
+    int loInt = -122;
+    uint laFloat = 500000 + random(17) % 300000;
+    uint loFloat = 250000 + random(123) % 250000;
+    return (laInt, laFloat, loInt, loFloat);
   }
 
   function random(uint rnd) private view returns (uint32) {
