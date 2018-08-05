@@ -1,7 +1,7 @@
 /* global web3 */
 
 import Web3 from 'web3';
-import abiFile from './PokemonPlatform.json';
+import abiFile from '../../../../../smartContracts/build/contracts/PokemonPlatform.json';
 
 let web3js;
 let contract;
