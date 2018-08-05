@@ -19,8 +19,12 @@
 }
 
 .container {
-  margin: 0 auto;
-  padding: 20px 0;
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  background: #24ccaa;
+  margin: 0;
+  padding: 0;
   max-width: var(--max-content-width);
 }
 

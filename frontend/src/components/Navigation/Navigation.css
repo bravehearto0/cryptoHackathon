@@ -8,21 +8,21 @@
  */
 
 .root {
-  float: right;
-  margin: 6px 0 0;
+  margin: 0;
 }
 
 .link {
   display: inline-block;
-  padding: 3px 8px;
+  padding: 30px 40px;
   text-decoration: none;
   font-size: 1.125em; /* ~18px */
+  border-right: 1px solid white;
 }
 
 .link,
 .link:active,
 .link:visited {
-  color: rgba(255, 255, 255, 0.6);
+  color: white;
 }
 
 .link:hover {
