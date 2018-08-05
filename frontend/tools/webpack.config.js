@@ -13,7 +13,6 @@ import url from 'url';
 import webpack from 'webpack';
 import webpackMerge from 'webpack-merge';
 
-import { baseUrl, cdnUrl, domain, s3Url } from '../src/common/utils/config';
 import * as appConfigs from './webpack.app_config';
 import pkg from '../package.json';
 import settings from '../settings';
@@ -171,10 +170,6 @@ let serverPlugins = [
   }),
   new webpack.DefinePlugin(Object.assign({
     __CLIENT__: false, __SERVER__: true, __SSR__: IS_SSR,
-    __BASE_URL__: `"${ baseUrl }"`,
-    __DOMAIN__: `"${ domain }"`,
-    __S3_URL__: `"${ s3Url }"`,
-    __CDN_URL__: `"${ cdnUrl }"`,
     __DEV__: __DEV__, 'process.env.NODE_ENV': `"${buildNodeEnv}"`,
     __BACKEND_URL__: `"${backendUrl}"`,
     __PERSIST_GQL__: IS_PERSIST_GQL,
@@ -221,7 +216,7 @@ const serverConfig = webpackMerge.smart(cloneDeep(createBaseConfig("server")), {
     filename: '[name].js',
     sourceMapFilename: '[name].[chunkhash].js.map',
     path: path.resolve(settings.backendBuildDir),
-    publicPath: cdnUrl,
+    publicPath: '/',
   },
   plugins: serverPlugins,
 }, appConfigs.serverConfig);
@@ -232,10 +227,6 @@ const createClientPlugins = (platform) => {
       __CLIENT__: true, __SERVER__: false, __SSR__: IS_SSR,
       __DEV__: __DEV__, 'process.env.NODE_ENV': `"${buildNodeEnv}"`,
       __PERSIST_GQL__: IS_PERSIST_GQL,
-      __S3_URL__: `"${ s3Url }"`,
-      __CDN_URL__: `"${ cdnUrl }"`,
-      __BASE_URL__: `"${ baseUrl }"`,
-      __DOMAIN__: `"${ domain }"`,
       __BACKEND_URL__: (
         platform !== 'web' ||
         url.parse(backendUrl).hostname !== 'localhost'
@@ -301,7 +292,7 @@ const webConfig = webpackMerge.smart(cloneDeep(createBaseConfig("web")), {
   output: {
     filename: '[name].[hash].js',
     path: path.resolve(path.join(settings.frontendBuildDir, 'web')),
-    publicPath: cdnUrl,
+    publicPath: '/',
   },
   plugins: createClientPlugins("web"),
   devServer: merge({}, baseDevServerConfig, {

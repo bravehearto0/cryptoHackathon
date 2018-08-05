@@ -6,10 +6,8 @@ import Home from './containers/Home';
 
 import Feature from '../connector';
 
-const homes = ['/', '/home/.*'];
-
 export default new Feature({
   route: [
-    <Route exact path={`(${homes.join('|')})`} component={Home}/>,
+    <Route exact path="/" component={Home}/>,
   ],
 });

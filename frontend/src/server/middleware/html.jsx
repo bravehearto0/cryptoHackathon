@@ -2,7 +2,6 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import serialize from 'serialize-javascript';
 
-import { cdnUrl } from '../../common/utils/config';
 import styles from '../../client/styles/styles.scss';
 
 const Html = ({ content, state, assetMap, css, helmet }) => {
@@ -21,9 +20,9 @@ const Html = ({ content, state, assetMap, css, helmet }) => {
         <meta name="theme-color" content="#ffffff"/>
 
         <link href="https://fonts.googleapis.com/css?family=Montserrat" rel="stylesheet"/>
-        <meta name="msapplication-config" content={`${cdnUrl}${assetMap["browserconfig.xml"]}`}/>
+        <meta name="msapplication-config" content={`/${assetMap["browserconfig.xml"]}`}/>
         <meta name="theme-color" content="#ffffff"/>
-        {!__DEV__ && <link rel="stylesheet" type="text/css" href={`${cdnUrl}${assetMap['bundle.css']}`}/>}
+        {!__DEV__ && <link rel="stylesheet" type="text/css" href={`/${assetMap['bundle.css']}`}/>}
         {!!__DEV__ &&
         <style dangerouslySetInnerHTML={{
           __html: styles._getCss(),
@@ -37,8 +36,8 @@ const Html = ({ content, state, assetMap, css, helmet }) => {
           dangerouslySetInnerHTML={{ __html: `window.__APOLLO_STATE__=${serialize(state, { isJSON: true })};` }}
           charSet="UTF-8"
         />
-        {assetMap["vendor.js"] && <script src={`${cdnUrl}${assetMap["vendor.js"]}`} charSet="utf-8"/>}
-        <script src={`${cdnUrl}${assetMap['bundle.js']}`} charSet="utf-8"/>
+        {assetMap["vendor.js"] && <script src={`/${assetMap["vendor.js"]}`} charSet="utf-8"/>}
+        <script src={`/${assetMap['bundle.js']}`} charSet="utf-8"/>
       </body>
     </html>
   );

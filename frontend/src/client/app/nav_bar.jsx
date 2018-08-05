@@ -1,39 +1,21 @@
-import { Container, Row, Navbar, Nav, NavItem } from 'reactstrap';
-// import { Link } from 'react-router-dom';
-import PropTypes from 'prop-types';
+import { Link } from 'react-router-dom';
+import { Navbar, Nav, NavItem } from 'reactstrap';
 import React from 'react';
 
-import modules from '../modules';
-
-const NavBar = ({ isNavVisible, handleClickNavBar, handleClickNavBarMenu }) => (
+const NavBar = () => (
   <Navbar light>
-    <Container fluid={true}>
-      <Row className="align-items-center">
-        <a className="sidebar-toggle" href="#" onClick={handleClickNavBarMenu}>
-          <span className="navbar-toggler-icon"></span>
-        </a>
-        {
-          isNavVisible &&
-            <Nav>
-              {modules.navItems.map(navItem =>
-                React.cloneElement(navItem, { onClick: handleClickNavBar})
-              )}
-            </Nav>
-        }
-        {false && (!__PERSIST_GQL__ || __DEV__) && <Nav className="ml-auto" navbar>
-          <NavItem>
-            <a href="/graphiql">GraphiQL</a>
-          </NavItem>
-        </Nav>}
-      </Row>
-    </Container>
+    <Nav>
+      <NavItem>
+        <Link to="/" className="nav-link">Profile</Link>
+      </NavItem>
+      <NavItem>
+        <Link to="/catch" className="nav-link">Catch</Link>
+      </NavItem>
+    </Nav>
   </Navbar>
 );
 
 NavBar.propTypes = {
-  handleClickNavBar: PropTypes.func,
-  handleClickNavBarMenu: PropTypes.func,
-  isNavVisible: PropTypes.bool,
 };
 
 export default NavBar;

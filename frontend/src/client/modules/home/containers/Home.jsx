@@ -1,9 +1,8 @@
-import React from 'react';
+import './Home.scss';
+
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
-import { Route, Link } from 'react-router-dom';
-
-import './Home.scss';
+import React from 'react';
 
 class Home extends React.Component {
   static propTypes = {
