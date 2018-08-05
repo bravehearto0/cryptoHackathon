@@ -1,0 +1,427 @@
+import { cloneDeep, filter, isArray, keys, merge } from 'lodash';
+
+import AssetResolver from 'haul/src/resolvers/AssetResolver';
+import ExtractTextPlugin from 'extract-text-webpack-plugin';
+import HasteResolver from 'haul/src/resolvers/HasteResolver';
+import HtmlWebpackPlugin from 'html-webpack-plugin';
+import ManifestPlugin from 'webpack-manifest-plugin';
+import PersistGraphQLPlugin from 'persistgraphql-webpack-plugin';
+import ip from 'ip';
+import nodeExternals from 'webpack-node-externals';
+import path from 'path';
+import url from 'url';
+import webpack from 'webpack';
+import webpackMerge from 'webpack-merge';
+
+import { baseUrl, cdnUrl, domain, s3Url } from '../src/common/utils/config';
+import * as appConfigs from './webpack.app_config';
+import pkg from '../package.json';
+import settings from '../settings';
+
+const IS_TEST = process.argv[1].indexOf('mocha-webpack') >= 0 || process.argv[1].indexOf('eslint') >= 0;
+const IS_SSR = settings.ssr && settings.backend && !IS_TEST;
+const IS_PERSIST_GQL = settings.persistGraphQL && settings.backend && !IS_TEST;
+global.__DEV__ = process.argv.length >= 3 && (process.argv[2].indexOf('watch') >= 0 || IS_TEST);
+const buildNodeEnv = __DEV__ ? (IS_TEST ? 'test' : 'development') : 'production';
+const backendUrl = settings.backendUrl.replace('{ip}', ip.address());
+const { protocol, host } = url.parse(backendUrl);
+const backendBaseUrl = protocol + '//' + host;
+
+const moduleName = path.resolve('node_modules/persisted_queries.json');
+let clientPersistPlugin, serverPersistPlugin;
+if (IS_PERSIST_GQL) {
+  clientPersistPlugin = new PersistGraphQLPlugin({ moduleName,
+    filename: 'extracted_queries.json', addTypename: true });
+  serverPersistPlugin = new PersistGraphQLPlugin({ moduleName,
+    provider: clientPersistPlugin });
+} else {
+  // Dummy plugin instances just to create persisted_queries.json virtual module
+  clientPersistPlugin = new PersistGraphQLPlugin({ moduleName });
+  serverPersistPlugin = new PersistGraphQLPlugin({ moduleName });
+}
+
+let basePlugins = [];
+
+if (__DEV__) {
+  basePlugins.push(new webpack.NamedModulesPlugin());
+} else {
+  basePlugins.push(new webpack.optimize.UglifyJsPlugin({ minimize: true }));
+  basePlugins.push(new webpack.LoaderOptionsPlugin({ minimize: true }));
+  basePlugins.push(new webpack.optimize.ModuleConcatenationPlugin());
+}
+
+const babelRule = {
+  loader: 'babel-loader',
+  options: {
+    cacheDirectory: __DEV__,
+    presets: ["react", ["es2015", { "modules": false }], "stage-0"],
+    plugins: [
+      "lodash",
+      "transform-runtime",
+      "transform-decorators-legacy",
+      "transform-class-properties",
+      ["styled-components", { "ssr": IS_SSR } ],
+    ].concat(__DEV__ && settings.reactHotLoader ? ['react-hot-loader/babel'] : []),
+    only: ["*.js", "*.jsx"],
+  },
+};
+
+const reactNativeRule = {
+  loader: 'babel-loader',
+  options: {
+    cacheDirectory: __DEV__,
+    presets: ["react-native"],
+    plugins: [
+      require.resolve('haul/src/utils/fixRequireIssues'),
+    ],
+  },
+};
+
+const mobileAssetTest = /\.(bmp|gif|jpg|jpeg|png|psd|svg|webp|m4v|aac|aiff|caf|m4a|mp3|wav|html|pdf|ttf)$/;
+
+const createBaseConfig = platform => {
+  const baseConfig = {
+    devtool: __DEV__ ? '#cheap-module-source-map' : '#source-map',
+    module: {
+      rules: [
+        {
+          test: /\.jsx?$/,
+          exclude: ['ios', 'android'].indexOf(platform) >= 0 ?
+            /node_modules\/(?!react-native|@expo|expo|lottie-react-native|haul|pretty-format|react-navigation)$/ :
+            /node_modules/,
+          use: [
+            ['ios', 'android'].indexOf(platform) >= 0 ?
+              function (req) {
+                let result;
+                if (req.resource.indexOf('node_modules') >= 0) {
+                  result = reactNativeRule;
+                } else {
+                  result = babelRule;
+                }
+                return result;
+              } :
+              babelRule,
+          ].concat(
+            settings.persistGraphQL ?
+              ['persistgraphql-webpack-plugin/js-loader'] : []
+          ),
+        },
+        {
+          test: /\.graphqls/,
+          use: 'raw-loader',
+        },
+        {
+          test: /\.(graphql|gql)$/,
+          exclude: /node_modules/,
+          use: ['graphql-tag/loader'].concat(
+            IS_PERSIST_GQL ?
+              ['persistgraphql-webpack-plugin/graphql-loader'] : []
+          ),
+        },
+      ],
+    },
+    resolve: {
+      extensions: platform === 'server' ?
+        [`.web.js`, `.web.jsx`, '.js', '.jsx'] :
+        [`.${platform}.js`, `.${platform}.jsx`, '.native.js', '.native.jsx', '.js', '.jsx'],
+    },
+    plugins: basePlugins,
+    watchOptions: {
+      ignored: /build/,
+    },
+    bail: !__DEV__,
+  };
+
+  if (['web', 'server'].indexOf(platform) >= 0) {
+    baseConfig.resolve.alias = {
+      'react-native': 'react-native-web',
+    };
+    baseConfig.module.rules = baseConfig.module.rules.concat([
+      {
+        test: /\.(png|ico|jpg|xml)$/,
+        use: 'url-loader?name=[hash].[ext]&limit=10000',
+      },
+      {
+        test: /\.woff(2)?(\?v=[0-9]\.[0-9]\.[0-9])?$/,
+        use: 'url-loader?name=./assets/[hash].[ext]&limit=10000',
+      },
+      {
+        test: /\.(ttf|eot|svg)(\?v=[0-9]\.[0-9]\.[0-9])?$/,
+        use: 'file-loader?name=assets/[hash].[ext]',
+      },
+    ]);
+  } else if (['android', 'ios'].indexOf(platform) >= 0) {
+    baseConfig.module.rules = baseConfig.module.rules.concat([
+      {
+        test: mobileAssetTest,
+        use: {
+          loader: require.resolve('./loaders/assetLoader'),
+          query: {platform, root: path.resolve('.'), bundle: false},
+        },
+      },
+    ]);
+  }
+  return baseConfig;
+};
+
+let serverPlugins = [
+  new webpack.BannerPlugin({
+    banner: 'require("source-map-support").install();',
+    raw: true, entryOnly: false,
+  }),
+  new webpack.DefinePlugin(Object.assign({
+    __CLIENT__: false, __SERVER__: true, __SSR__: IS_SSR,
+    __BASE_URL__: `"${ baseUrl }"`,
+    __DOMAIN__: `"${ domain }"`,
+    __S3_URL__: `"${ s3Url }"`,
+    __CDN_URL__: `"${ cdnUrl }"`,
+    __DEV__: __DEV__, 'process.env.NODE_ENV': `"${buildNodeEnv}"`,
+    __BACKEND_URL__: `"${backendUrl}"`,
+    __PERSIST_GQL__: IS_PERSIST_GQL,
+  })),
+  serverPersistPlugin,
+];
+
+const nodeExternalsFn = nodeExternals({
+  whitelist: [/(^webpack|^react-native)/],
+});
+
+const serverConfig = webpackMerge.smart(cloneDeep(createBaseConfig("server")), {
+  name: 'backend',
+  target: 'node',
+  node: {
+    __dirname: true,
+    __filename: true,
+  },
+  externals(context, request, callback) {
+    return nodeExternalsFn(context, request, function() {
+      if (request.indexOf('react-native') >= 0) {
+        return callback(null, 'commonjs ' + request + '-web');
+      } else {
+        return callback(...arguments);
+      }
+    });
+  },
+  module: {
+    rules: [
+      {
+        test: /\.scss$/,
+        use: __DEV__ ? [
+          { loader: 'isomorphic-style-loader' },
+          { loader: 'css-loader', options: { sourceMap: true } },
+          { loader: 'postcss-loader', options: { sourceMap: true } },
+          { loader: 'sass-loader', options: { sourceMap: true } }] :
+          [{ loader: 'ignore-loader' }],
+      },
+    ],
+  },
+  output: {
+    devtoolModuleFilenameTemplate: __DEV__ ? '../../[resource-path]' : undefined,
+    devtoolFallbackModuleFilenameTemplate: __DEV__ ? '../../[resource-path];[hash]' : undefined,
+    filename: '[name].js',
+    sourceMapFilename: '[name].[chunkhash].js.map',
+    path: path.resolve(settings.backendBuildDir),
+    publicPath: cdnUrl,
+  },
+  plugins: serverPlugins,
+}, appConfigs.serverConfig);
+
+const createClientPlugins = (platform) => {
+  let clientPlugins = [
+    new webpack.DefinePlugin(Object.assign({
+      __CLIENT__: true, __SERVER__: false, __SSR__: IS_SSR,
+      __DEV__: __DEV__, 'process.env.NODE_ENV': `"${buildNodeEnv}"`,
+      __PERSIST_GQL__: IS_PERSIST_GQL,
+      __S3_URL__: `"${ s3Url }"`,
+      __CDN_URL__: `"${ cdnUrl }"`,
+      __BASE_URL__: `"${ baseUrl }"`,
+      __DOMAIN__: `"${ domain }"`,
+      __BACKEND_URL__: (
+        platform !== 'web' ||
+        url.parse(backendUrl).hostname !== 'localhost'
+      ) ? `"${backendUrl}"` : false,
+    })),
+    clientPersistPlugin,
+  ];
+
+  if (platform === 'web') {
+    clientPlugins.push(new ManifestPlugin({
+      fileName: 'assets.json',
+    }));
+    if (!settings.backend) {
+      clientPlugins.push(new HtmlWebpackPlugin({
+        template: 'tools/html-plugin-template.ejs',
+        inject: 'body',
+      }));
+    }
+
+    if (!__DEV__) {
+      clientPlugins.push(new ExtractTextPlugin({ filename: '[name].[contenthash].css', allChunks: true }));
+      clientPlugins.push(new webpack.optimize.CommonsChunkPlugin({
+        name: "vendor",
+        filename: "[name].[hash].js",
+        minChunks: function(module) {
+          return module.resource && module.resource.indexOf(path.resolve('./node_modules')) === 0;
+        },
+      }));
+    }
+  }
+
+  return clientPlugins;
+};
+
+const baseDevServerConfig = {
+  hot: true,
+  contentBase: '/',
+  publicPath: '/',
+  headers: { 'Access-Control-Allow-Origin': '*' },
+  quiet: false,
+  noInfo: true,
+  stats: { colors: true, chunkModules: false },
+};
+
+const webConfig = webpackMerge.smart(cloneDeep(createBaseConfig("web")), {
+  name: 'web-frontend',
+  module: {
+    rules: [
+      {
+        test: /\.scss$/,
+        use: __DEV__ ? [
+          { loader: 'style-loader' },
+          { loader: 'css-loader', options: { sourceMap: true, importLoaders: 1 } },
+          { loader: 'postcss-loader', options: { sourceMap: true } },
+          { loader: 'sass-loader', options: { sourceMap: true } },
+        ] : ExtractTextPlugin.extract({
+          fallback: "style-loader",
+          use: ['css-loader', 'postcss-loader', 'sass-loader'],
+        }),
+      },
+    ],
+  },
+  output: {
+    filename: '[name].[hash].js',
+    path: path.resolve(path.join(settings.frontendBuildDir, 'web')),
+    publicPath: cdnUrl,
+  },
+  plugins: createClientPlugins("web"),
+  devServer: merge({}, baseDevServerConfig, {
+    port: settings.webpackDevPort,
+    proxy: {
+      '!/*.hot-update.{json,js}': {
+        target: backendBaseUrl,
+        logLevel: 'info',
+      },
+    },
+  }),
+}, appConfigs.webConfig);
+
+const createMobileConfig = platform => webpackMerge.smart(cloneDeep(createBaseConfig(platform)), {
+  output: {
+    filename: `index.mobile.bundle`,
+    publicPath: '/',
+  },
+  resolve: {
+    plugins: [
+      new HasteResolver({
+        directories: [path.resolve('node_modules/react-native')],
+      }),
+      new AssetResolver({ platform, test: mobileAssetTest }),
+    ],
+    mainFields: ['react-native', 'browser', 'main'],
+  },
+  plugins: [
+    new webpack.SourceMapDevToolPlugin({
+      test: /\.(js|jsx|css|bundle)($|\?)/i,
+      filename: '[file].map',
+    }),
+    ...createClientPlugins(platform),
+  ],
+});
+
+const androidConfig = webpackMerge.smart(cloneDeep(createMobileConfig('android')), {
+  name: 'android-frontend',
+  output: {
+    path: path.resolve(path.join(settings.frontendBuildDir, 'android')),
+  },
+  devServer: merge({}, baseDevServerConfig, {
+    hot: false,
+    port: 3010,
+  }),
+}, appConfigs.androidConfig);
+
+const iOSConfig = webpackMerge.smart(cloneDeep(createMobileConfig('ios')), {
+  name: 'ios-frontend',
+  output: {
+    path: path.resolve(path.join(settings.frontendBuildDir, 'ios')),
+  },
+  devServer: merge({}, baseDevServerConfig, {
+    hot: false,
+    port: 3020,
+  }),
+}, appConfigs.iOSConfig);
+
+const getDepsForPlatform = platform => {
+  let deps = filter(keys(pkg.dependencies), key => {
+    const val = appConfigs.dependencyPlatforms[key];
+    return (!val || val === platform || (isArray(val) && val.indexOf(platform) >= 0));
+  });
+  if (['android', 'ios'].indexOf(platform) >= 0) {
+    deps = deps.concat(require.resolve('./react-native-polyfill.js'));
+  }
+  return deps;
+};
+
+const createDllConfig = platform => {
+  const config = ['android', 'ios'].indexOf(platform) >= 0 ?
+    createMobileConfig(platform) :
+    createBaseConfig(platform);
+  const name = `vendor_${platform}`;
+  return {
+    ...config,
+    devtool: '#cheap-module-source-map',
+    name: `${platform}-dll`,
+    entry: {
+      vendor: getDepsForPlatform(platform),
+    },
+    plugins: [
+      new webpack.DefinePlugin(Object.assign({
+        __DEV__: __DEV__, 'process.env.NODE_ENV': `"${buildNodeEnv}"`,
+      })),
+      new webpack.DllPlugin({
+        name,
+        path: path.join(settings.dllBuildDir, `${name}_dll.json`),
+      }),
+    ],
+    output: {
+      filename: `${name}.[hash]_dll.js`,
+      path: path.resolve(settings.dllBuildDir),
+      library: name,
+    },
+  };
+};
+
+module.exports =
+  IS_TEST ?
+    serverConfig :
+    {
+      backend: {
+        platform: 'server',
+        config: serverConfig,
+      },
+      web: {
+        platform: 'web',
+        config: webConfig,
+        dll: createDllConfig("web"),
+      },
+      android: {
+        platform: 'android',
+        config: androidConfig,
+        dll: createDllConfig("android"),
+      },
+      ios: {
+        platform: 'ios',
+        config: iOSConfig,
+        dll: createDllConfig("ios"),
+      },
+      backendUrl,
+    };

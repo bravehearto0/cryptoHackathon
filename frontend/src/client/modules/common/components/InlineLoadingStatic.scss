@@ -1,0 +1,95 @@
+@-webkit-keyframes LoadingAni {
+  0% {
+    top: 80px;
+    left: 80px;
+    width: 0;
+    height: 0;
+    opacity: 1;
+  }
+  95% {
+    top: 10px;
+    left: 10px;
+    width: 140px;
+    height: 140px;
+    opacity: 0;
+  }
+  100% {
+    top: -1000000000px;
+    left: 10px;
+    width: 140px;
+    height: 140px;
+    opacity: 0;
+  }
+}
+
+@keyframes LoadingAni {
+  0% {
+    top: 80px;
+    left: 80px;
+    width: 0;
+    height: 0;
+    opacity: 1;
+  }
+  95% {
+    top: 10px;
+    left: 10px;
+    width: 140px;
+    height: 140px;
+    opacity: 0;
+  }
+  100% {
+    top: -1000000000px;
+    left: 10px;
+    width: 140px;
+    height: 140px;
+    opacity: 0;
+  }
+}
+
+@-webkit-keyframes LoadingAni-small {
+  0% {
+    top: 40px;
+    left: 40px;
+    width: 0;
+    height: 0;
+    opacity: 1;
+  }
+  95% {
+    top: 5px;
+    left: 5px;
+    width: 70px;
+    height: 70px;
+    opacity: 0;
+  }
+  100% {
+    top: -100000000000px;
+    left: 5px;
+    width: 70px;
+    height: 70px;
+    opacity: 0;
+  }
+}
+
+@keyframes LoadingAni-small {
+  0% {
+    top: 40px;
+    left: 40px;
+    width: 0;
+    height: 0;
+    opacity: 1;
+  }
+  95% {
+    top: 5px;
+    left: 5px;
+    width: 70px;
+    height: 70px;
+    opacity: 0;
+  }
+  100% {
+    top: -10000000000000px;
+    left: 5px;
+    width: 70px;
+    height: 70px;
+    opacity: 0;
+  }
+}

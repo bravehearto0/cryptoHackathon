@@ -1,0 +1,278 @@
+@import './bootstrap';
+@import './_reactstrap';
+
+$xs: 320px;
+$md: 576px;
+$md2: 800px;
+$lg: 992px;
+$xl: 1200px;
+
+// mobile padding
+$mobPadding: 4vw;
+
+// site wide
+* {
+  font-family: 'Montserrat', 'Open Sans', Roboto, sans-serif;
+}
+
+ul, ol {
+  list-style: none;
+  padding: 0; margin: 0;
+}
+
+a, a:hover {
+  color: black;
+  text-decoration: none;
+}
+
+// common
+.btn, .badge-pill {
+  cursor: pointer;
+}
+.cap {
+  text-transform: capitalize;
+}
+
+// custom layout
+.app-wrap, #content {
+  height: 100%;
+}
+.navbar .container-fluid {
+  width: 100%;
+  .nav {
+    margin-left: 10px;
+    z-index: 2;
+  }
+  .navbar-brand {
+    margin-left: 15px;
+  }
+}
+
+.dropdown.show {
+  .dropdown-menu {
+    display: block;
+  }
+}
+
+.sidebar-content {
+  height: 100%;
+  overflow: auto;
+  background-color: #F8F8F8;
+  box-shadow: 1px 0 0 0 #CECECE;
+}
+
+// theme setting
+$color1: #ffb117;
+$color2: #376693;
+$color3: #dadbd7;
+$color4: #fdffff;
+$color5: #b34b43;
+
+// animations
+$anim: 0.3s ease-out;
+
+/* background color */
+$bgcolor: $color4;
+$bgcolor-dark: #f1f1f1;
+
+/* font color */
+$color: $color3;
+$color-active: $color;
+
+/* borders */
+$border-color: $color3;
+$border: 1px solid $border-color;
+
+/* layout sizes */
+$header-height: 80px;
+$header-height-short: $header-height - 30px;
+$footer-height: 125px;
+$sidebar-width: 220px;
+
+$btn-primary: white;
+$btn-secondary: $color2;
+$btn: $color3;
+
+html, body {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  // background: $bgcolor-dark;
+  margin-bottom: 0;
+}
+
+.gnb, .header-overlay {
+  transition: all $anim;
+  transition: border 0s;
+  position: fixed;
+  top: 0;
+  width: 100%;
+  height: $header-height;
+  border-bottom: $border;
+  background: $bgcolor;
+  z-index: 999;
+  .navbar {
+    overflow: visible;
+    transition: all $anim;
+;
+    padding: 20px;
+    .logo {
+      height: 26px;
+    }
+    .sidebar-toggle {
+      z-index: 2;
+      padding: 7px 14px 7px 7px;
+      display: inline-block;
+    }
+    .nav-link {
+      font-size: 1.25em;
+      padding: .2em 1em;
+      transition: all $anim;
+      color: #2b2b2b;
+      .dark & {
+        color: white;
+      }
+      .scroll-down & {
+        color: #2b2b2b;
+      }
+    }
+    .scroll-down & {
+      padding: 6px 10px;
+    }
+  }
+  .dark & {
+    transition: all $anim;
+    background: none;
+    border-bottom: 0;
+  }
+  .scroll-down & {
+    transition: all $anim;
+    border-bottom: $border;
+    box-shadow: 0 -11px 27px black;
+    height: $header-height-short;
+  }
+}
+
+.header-overlay {
+  transition: all $anim;
+  .dark & {
+    transition: all $anim;
+    background: white;
+    opacity: 0.4;
+    z-index: 998;
+  }
+  .dark.scroll-down & {
+    opacity: 0.9;
+  }
+}
+
+.sidebar {
+  transition: all $anim;
+  width: $sidebar-width;
+  position: fixed;
+  left: 0;
+  top: 0;
+  background: transparent;
+  border: 0;
+  height: 100%;
+  padding-top: $header-height;
+  z-index: 997;
+  .scroll-down & {
+    padding-top: $header-height-short;
+  }
+}
+
+.wrapper {
+  transition: padding-left $anim;
+  box-sizing: border-box;
+  padding-top: $header-height;
+  padding-left: $sidebar-width;
+  position: relative;
+  width: 100%;
+  min-height: 100%;
+}
+
+.content {
+  padding-bottom: $footer-height;
+  .container {
+    width: 100%;
+  }
+}
+
+.full-size {
+  .content {
+    padding-bottom: 0;
+  }
+  padding-bottom: $footer-height;
+}
+
+footer {
+  transition: padding $anim;
+  bottom: 0;
+  position: absolute;
+  height: $footer-height;
+  width: 100%;
+  box-sizing: border-box;
+  margin-left: $sidebar-width;
+  padding-left: $sidebar-width;
+  left: -$sidebar-width - 1px;
+}
+
+.sidebar-close {
+  .sidebar {
+    transition: left 0.1s ease;
+    left: -$sidebar-width - 1px;
+  }
+  .wrapper {
+    transition: padding-left 0.1s ease;
+    padding-left: 0;
+  }
+  footer {
+    transition: padding 0.1s ease;
+    padding-left: 0;
+  }
+}
+
+@media (max-width: 440px) {
+  .navbar .container-fluid {
+    .navbar-brand {
+      margin-left: 4px;
+      margin-right: 4px;
+    }
+    .nav-link {
+      padding-left: 6px;
+      padding-right: 6px;
+    }
+  }
+}
+
+@media (min-width: $lg) {
+  .sidebar-open {
+    .sidebar {
+      border-right: $border;
+    }
+  }
+}
+
+@media (max-width: $lg) {
+  .sidebar-open {
+    .sidebar {
+      border: 0;
+      left: 0;
+    }
+    .wrapper {
+      padding-left: 0;
+    }
+
+    footer {
+      padding-left: 0;
+    }
+  } 
+
+  .sidebar-close {
+    .sidebar {
+      left: -$sidebar-width - 1px;
+    }
+  } 
+}

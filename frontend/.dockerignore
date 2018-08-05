@@ -1,2 +1,7 @@
-.git
+node_modules
 *.sqlite3
+npm-debug.log
+mongodb
+mongodb-seed
+build
+dev
