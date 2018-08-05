@@ -49,8 +49,8 @@ contract Auction {
     }
 
     // any one can create a blind bid - input hash value as id of bid, time for bidding in second
-    function createBid(bytes32 _blindedBid, uint _pokemonId, uint _biddingTime) public onlyBefore(_blindedBid) {
-        bids[_blindedBid] = Bid(msg.sender, _pokemonId, _blindedBid, 0, 0x0, 0, now + _biddingTime, false);
+    function createBid(bytes32 _blindedBid, uint _pokemonId, uint _biddingTime, uint _startBidPrice) public onlyBefore(_blindedBid) {
+        bids[_blindedBid] = Bid(msg.sender, _pokemonId, _blindedBid, 0, 0x0, _startBidPrice, now + _biddingTime, false);
         emit BidCreated(msg.sender, _blindedBid);
     }
 

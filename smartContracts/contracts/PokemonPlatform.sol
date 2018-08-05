@@ -214,7 +214,7 @@ contract PokemonPlatform is Ownable, gps{
         uint amount = 0;
         for (uint i=0; i < allPokemons.length; i++) {
             // release time is earlier than current timestamp -> released Pokemon
-            if(allPokemons[i].generation == nextGeneration){
+            if(allPokemons[i].generation <= nextGeneration && allPokemons[i].releaseTimestamp == 0){
                 allPokemons[i].releaseTimestamp = block.timestamp;
                 numReleasedPokemon += 1;
                 amount += 1;
@@ -247,6 +247,10 @@ contract PokemonPlatform is Ownable, gps{
         lastAccess[msg.sender] = Access(0, 0, 0, 0, 0);
         emit UserProfileCreated(_name, msg.sender, _photoUrl);
         return true;
+    }
+
+    function getReleaseNumber() external view returns (uint) {
+       return nextGeneration -1;
     }
 
 
