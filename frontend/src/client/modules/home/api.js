@@ -5,7 +5,7 @@ import abiFile from './PokemonPlatform.json';
 
 let web3js;
 let contract;
-const CONTRACT_ADDRESS = '0xe3bf2f428ede719dc1b6f2320f4558cba726cb66';
+const CONTRACT_ADDRESS = '0xed52fd3f7de742cc7f6283106d66bb5366885d68';
 
 export const init = () => {
   if (__CLIENT__ && !web3js) {
