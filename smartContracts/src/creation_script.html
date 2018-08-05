@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>Pokemon creation script front-end</title>
+    <script language="javascript" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script language="javascript" type="text/javascript" src="./js/web3.min.js"></script>
+  </head>
+  <body>
+
+    <script>
+      var userAccount;
+      var contract;
+      var abi = [
+        {
+          "constant": true,
+          "inputs": [
+            {
+              "name": "",
+              "type": "uint256"
+            }
+          ],
+          "name": "pokemonToOwner",
+          "outputs": [
+            {
+              "name": "",
+              "type": "address"
+            }
+          ],
+          "payable": false,
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "constant": true,
+          "inputs": [
+            {
+              "name": "",
+              "type": "address"
+            }
+          ],
+          "name": "lastAccess",
+          "outputs": [
+            {
+              "name": "timestamp",
+              "type": "uint256"
+            },
+            {
+              "name": "latitudeInt",
+              "type": "int256"
+            },
+            {
+              "name": "longitudeInt",
+              "type": "int256"
+            },
+            {
+              "name": "latitudeFloat",
+              "type": "uint256"
+            },
+            {
+              "name": "longitudeFloat",
+              "type": "uint256"
+            }
+          ],
+          "payable": false,
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "constant": true,
+          "inputs": [
+            {
+              "name": "",
+              "type": "bytes32"
+            }
+          ],
+          "name": "lottery",
+          "outputs": [
+            {
+              "name": "",
+              "type": "uint256"
+            }
+          ],
+          "payable": false,
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "constant": true,
+          "inputs": [
+            {
+              "name": "",
+              "type": "uint256"
+            }
+          ],
+          "name": "pokemonToLocation",
+          "outputs": [
+            {
+              "name": "timestamp",
+              "type": "uint256"
+            },
+            {
+              "name": "latitudeInt",
+              "type": "int256"
+            },
+            {
+              "name": "longitudeInt",
+              "type": "int256"
+            },
+            {
+              "name": "latitudeFloat",
+              "type": "uint256"
+            },
+            {
+              "name": "longitudeFloat",
+              "type": "uint256"
+            }
+          ],
+          "payable": false,
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "constant": true,
+          "inputs": [],
+          "name": "mOwner",
+          "outputs": [
+            {
+              "name": "",
+              "type": "address"
+            }
+          ],
+          "payable": false,
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "constant": false,
+          "inputs": [
+            {
+              "name": "_newOwner",
+              "type": "address"
+            }
+          ],
+          "name": "transferOwnership",
+          "outputs": [],
+          "payable": false,
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "inputs": [],
+          "payable": false,
+          "stateMutability": "nonpayable",
+          "type": "constructor"
+        },
+        {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "name": "_PokemonId",
+              "type": "uint256"
+            },
+            {
+              "indexed": true,
+              "name": "_owner",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "name": "_name",
+              "type": "string"
+            },
+            {
+              "indexed": false,
+              "name": "_url",
+              "type": "string"
+            },
+            {
+              "indexed": false,
+              "name": "_bio",
+              "type": "string"
+            },
+            {
+              "indexed": false,
+              "name": "_generation",
+              "type": "uint256"
+            },
+            {
+              "indexed": false,
+              "name": "_releaseTimestamp",
+              "type": "uint256"
+            }
+          ],
+          "name": "ClaimPokemon",
+          "type": "event"
+        },
+        {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "name": "_user",
+              "type": "address"
+            }
+          ],
+          "name": "NoAvailablePokemon",
+          "type": "event"
+        },
+        {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "name": "_num",
+              "type": "uint256"
+            }
+          ],
+          "name": "GpsCheckFailed",
+          "type": "event"
+        },
+        {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "name": "_currentGeneration",
+              "type": "uint256"
+            },
+            {
+              "indexed": false,
+              "name": "_amount",
+              "type": "uint256"
+            }
+          ],
+          "name": "PokemonReleased",
+          "type": "event"
+        },
+        {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "name": "_id",
+              "type": "uint256"
+            },
+            {
+              "indexed": false,
+              "name": "_name",
+              "type": "string"
+            },
+            {
+              "indexed": false,
+              "name": "_url",
+              "type": "string"
+            },
+            {
+              "indexed": false,
+              "name": "_bio",
+              "type": "string"
+            },
+            {
+              "indexed": false,
+              "name": "_generation",
+              "type": "uint32"
+            },
+            {
+              "indexed": false,
+              "name": "_releaseTimestamp",
+              "type": "uint32"
+            }
+          ],
+          "name": "PokemonPopulated",
+          "type": "event"
+        },
+        {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "name": "_name",
+              "type": "string"
+            },
+            {
+              "indexed": true,
+              "name": "_address",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "name": "_photoUrl",
+              "type": "string"
+            }
+          ],
+          "name": "UserProfileCreated",
+          "type": "event"
+        },
+        {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "name": "previousOwner",
+              "type": "address"
+            },
+            {
+              "indexed": true,
+              "name": "newOwner",
+              "type": "address"
+            }
+          ],
+          "name": "OwnershipTransferred",
+          "type": "event"
+        },
+        {
+          "constant": false,
+          "inputs": [
+            {
+              "name": "latitudeInt",
+              "type": "int256"
+            },
+            {
+              "name": "latitudeFloat",
+              "type": "uint256"
+            },
+            {
+              "name": "longitudeInt",
+              "type": "int256"
+            },
+            {
+              "name": "longitudeFloat",
+              "type": "uint256"
+            }
+          ],
+          "name": "findPokemon",
+          "outputs": [
+            {
+              "name": "",
+              "type": "bool"
+            }
+          ],
+          "payable": false,
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "constant": true,
+          "inputs": [
+            {
+              "name": "_index",
+              "type": "uint256"
+            }
+          ],
+          "name": "getPokemon",
+          "outputs": [
+            {
+              "name": "",
+              "type": "string"
+            },
+            {
+              "name": "",
+              "type": "string"
+            },
+            {
+              "name": "",
+              "type": "string"
+            },
+            {
+              "name": "",
+              "type": "uint256"
+            },
+            {
+              "name": "",
+              "type": "uint256"
+            }
+          ],
+          "payable": false,
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "constant": true,
+          "inputs": [],
+          "name": "getMyPokemons",
+          "outputs": [
+            {
+              "name": "",
+              "type": "uint256[]"
+            }
+          ],
+          "payable": false,
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "constant": true,
+          "inputs": [],
+          "name": "getAllPokemons",
+          "outputs": [
+            {
+              "name": "",
+              "type": "uint256[]"
+            }
+          ],
+          "payable": false,
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "constant": true,
+          "inputs": [],
+          "name": "getUnclaimedPokemons",
+          "outputs": [
+            {
+              "name": "",
+              "type": "uint256[]"
+            }
+          ],
+          "payable": false,
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "constant": false,
+          "inputs": [
+            {
+              "name": "name",
+              "type": "string"
+            },
+            {
+              "name": "url",
+              "type": "string"
+            },
+            {
+              "name": "bio",
+              "type": "string"
+            },
+            {
+              "name": "generation",
+              "type": "uint32"
+            }
+          ],
+          "name": "populatePokemon",
+          "outputs": [],
+          "payable": false,
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "constant": false,
+          "inputs": [],
+          "name": "releasePokemon",
+          "outputs": [],
+          "payable": false,
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "constant": false,
+          "inputs": [
+            {
+              "name": "_name",
+              "type": "string"
+            },
+            {
+              "name": "_photoUrl",
+              "type": "string"
+            }
+          ],
+          "name": "createProfile",
+          "outputs": [
+            {
+              "name": "",
+              "type": "bool"
+            }
+          ],
+          "payable": false,
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "constant": true,
+          "inputs": [],
+          "name": "getProfile",
+          "outputs": [
+            {
+              "name": "",
+              "type": "string"
+            },
+            {
+              "name": "",
+              "type": "address"
+            },
+            {
+              "name": "",
+              "type": "string"
+            },
+            {
+              "name": "",
+              "type": "uint256"
+            }
+          ],
+          "payable": false,
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "constant": true,
+          "inputs": [
+            {
+              "name": "pokemonId",
+              "type": "uint256"
+            }
+          ],
+          "name": "getPokemonLocation",
+          "outputs": [
+            {
+              "name": "",
+              "type": "int256"
+            },
+            {
+              "name": "",
+              "type": "uint256"
+            },
+            {
+              "name": "",
+              "type": "int256"
+            },
+            {
+              "name": "",
+              "type": "uint256"
+            }
+          ],
+          "payable": false,
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "constant": false,
+          "inputs": [
+            {
+              "name": "newOwner",
+              "type": "address"
+            },
+            {
+              "name": "_index",
+              "type": "uint256"
+            }
+          ],
+          "name": "changeOwner",
+          "outputs": [],
+          "payable": false,
+          "stateMutability": "nonpayable",
+          "type": "function"
+        }
+      ]
+
+      var web3js;
+
+      function startApp() {
+        web3js = new Web3.providers.HttpProvider(
+          'https://ropsten.infura.io/v3/7509a94fe1d14f22bb3a34e3fb5c82e0'
+        );
+        web3 = new Web3(web3js);
+
+        var contractAddress = "0xed52fd3f7de742cc7f6283106d66bb5366885d68";
+        contract = new web3.eth.contract(abi, contractAddress);
+
+        var accountInterval = setInterval(function() {
+          // Check if account has changed
+          if (web3.eth.accounts[0] !== userAccount) {
+            userAccount = web3.eth.accounts[0];
+            // Call a function to update the UI with the new account
+            getZombiesByOwner(userAccount)
+            .then(displayZombies);
+          }
+        }, 100);
+
+        var pokemonPopulated = contract.PokemonPopulated();
+        pokemonPopulated.watch(function(error, result) {
+          if (!error) {
+            console.log("pokemonPopulated event: " + result);
+          } else {
+            console.log("error on reading event: " + error);
+          }
+        });
+      }
+
+      function populatePokemon(name, url, bio, generation) {
+        contract.methods.populatePokemon(name, url, bio, generation)
+        .send({ from: userAccount })
+        .on("receipt", function(receipt) {
+          console.log("successfully populated pokemon" + name + " " + url + " " + bio + " " + generation);
+        })
+        .on("error", function(error) {
+          console.log(error);
+        });
+      }
+
+      window.addEventListener('load', function() {
+
+        // Checking if Web3 has been injected by the browser (Mist/MetaMask)
+        // if (typeof web3 !== 'undefined') {
+        //   // Use Mist/MetaMask's provider
+        //   var web3js = new Web3(web3.currentProvider);
+        // } else {
+        //   // Handle the case where the user doesn't have Metamask installed
+        //   // Probably show them a message prompting them to install Metamask
+        // }
+
+        // Now you can start your app & access web3 freely:
+        startApp()
+
+      })
+    </script>
+  </body>
+</html>

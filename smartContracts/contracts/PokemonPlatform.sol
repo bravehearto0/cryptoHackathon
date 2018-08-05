@@ -99,8 +99,6 @@ contract PokemonPlatform is Ownable, gps{
 
     // TODO: apply ratelimit and GPS spoofing checks - user claim ownership of Pokemon
     function findPokemon(int latitudeInt, uint latitudeFloat, int longitudeInt, uint longitudeFloat) external
-      //rateLimitCheck()
-      hasProfile()
       returns(bool) {
         //if (!gpsCheck(latitudeInt, latitudeFloat, longitudeInt, longitudeFloat)) {
         //  emit GpsCheckFailed(1);
@@ -137,13 +135,12 @@ contract PokemonPlatform is Ownable, gps{
         return false;
     }
 
-    function getPokemon(uint _index) external view hasProfile() returns (string, string, string, uint, uint) {
+    function getPokemon(uint _index) external view returns (string, string, string, uint, uint) {
       Pokemon memory p = allPokemons[_index - 1];
       return (p.name, p.url, p.bio, p.generation, p.releaseTimestamp);
     }
     // return name, url, bio, generation, releaseTimestamp, ownerName
     function getPokemonOwnerView(uint _index) external view
-        hasProfile()
         returns (string, string, string, uint, uint, string) {
       Pokemon memory p = allPokemons[_index - 1];
       address ownerAddress = pokemonToOwner[_index];
@@ -170,7 +167,7 @@ contract PokemonPlatform is Ownable, gps{
     }
 
     // get all available pokemon that has been released
-    function getAllPokemons() external view hasProfile() returns (uint[]) {
+    function getAllPokemons() external view returns (uint[]) {
       // find all released Pokemon
       uint[] memory v = new uint[](numReleasedPokemon);
       uint k = 0;
@@ -185,7 +182,7 @@ contract PokemonPlatform is Ownable, gps{
     }
 
     // get the unclaimed pokemon mapping
-    function getUnclaimedPokemons() external view hasProfile() returns(uint[]) {
+    function getUnclaimedPokemons() external view  returns(uint[]) {
       // front end parse the generation and total count
       // find all released Pokemon
       uint numUnclaimed = numReleasedPokemon - numClaimedPokemon;
@@ -202,14 +199,14 @@ contract PokemonPlatform is Ownable, gps{
     }
 
     // used to add new pokemons into allPokemons
-    function populatePokemon(string name, string url, string bio, uint32 generation) public onlyOwner() {
+    function populatePokemon(string name, string url, string bio, uint32 generation) public  {
       // increment Id
       uint PokemonId = allPokemons.push(Pokemon(name, url, bio, generation, 0));
       emit PokemonPopulated(PokemonId, name, url, bio, generation, 0);
     }
 
     // owner release new pokemon generation
-    function releasePokemon() public onlyOwner() {
+    function releasePokemon() public  {
         // release Pokemons with nextGeneration
         uint amount = 0;
         for (uint i=0; i < allPokemons.length; i++) {
